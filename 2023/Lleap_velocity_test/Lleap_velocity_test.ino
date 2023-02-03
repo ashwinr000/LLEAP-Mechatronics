@@ -1,6 +1,6 @@
 #define ChA 2
 #define PWM 9
-#define TPR 33
+#define TPR 11
 
 int maxSpd = 255; //analogWrite value corresponding to 5V which is ~2500 RPM
 
