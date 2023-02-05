@@ -2,7 +2,7 @@
 #define PWM 9
 #define TPR 11
 
-int maxSpd = 255; //analogWrite value corresponding to 5V which is ~2500 RPM
+#define maxSpd 255 //analogWrite value corresponding to 5V which is ~2500 RPM
 
 unsigned long time = 0;
 unsigned long prevTime = 0;

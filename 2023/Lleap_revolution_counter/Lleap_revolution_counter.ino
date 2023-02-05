@@ -1,8 +1,9 @@
 #define ChA 2
 #define PWM 9
-#define TPR 33
+#define TPR 11
 
-int maxSpd = 255; //analogWrite value corresponding to 5V
+#define maxSpd 255 //analogWrite value corresponding to 5V
+
 int tickCount = 0;
 
 unsigned long time = 0;
