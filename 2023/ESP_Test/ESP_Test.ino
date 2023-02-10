@@ -1,9 +1,15 @@
-void setup() {
-  // put your setup code here, to run once:
+int counter = 0;
 
+void setup() {
+  Serial.begin(115200);
+  pinMode(25, INPUT);
+  attachInterrupt(digitalPinToInterrupt(25), counterTick, RISING);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  Serial.println(counter);
+}
 
+void counterTick() {
+  counter++;
 }
