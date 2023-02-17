@@ -1,6 +1,6 @@
-#define ENA 7
-#define PWM 9
-#define ChA 2
+#define ENA 35
+#define DAC 25
+#define ChA 34
 
 #define DPR 360.0 // Degrees rotated by joint per revolution of motor: 360 / (Revolutions of Motor / 1 Revolution of Joint)
 #define TPR 11.0 // Hall Effect Sensor Ticks per Revolution of motor
@@ -18,7 +18,7 @@ int tickCount = 0;
 float DT = 0;
 float DPT = DPR / TPR;
 
-unsigned long time = 0;
+unsigned long currentTime = 0;
 unsigned long prevTime = 0;
 
 void setup() {
@@ -26,14 +26,14 @@ void setup() {
   Serial.begin(115200);
  
   pinMode(ENA, OUTPUT);
-  pinMode(PWM, OUTPUT);
+  pinMode(DAC, OUTPUT);
   pinMode (ChA, INPUT);
   attachInterrupt(digitalPinToInterrupt(ChA), tickCounter, RISING); //run tickCounter everytime the Hall Effect sensor triggers high
-  time = micros();
+  currentTime = micros();
   prevTime = micros();
 
   digitalWrite(ENA, LOW);
-  analogWrite(PWM, 0);
+  dacWrite(DAC, 0);
   turn(3600);
 
 }
@@ -57,11 +57,11 @@ void turn(int degs) {
      int vel = P + I + D;
      
      digitalWrite(ENA, HIGH);
-     analogWrite(PWM, min(abs(vel), maxSPD));
+     dacWrite(DAC, min(abs(vel), maxSPD));
      prevError = error;
    }
   
-  analogWrite(PWM, 0);
+  dacWrite(DAC, 0);
   delay(1000);
   digitalWrite(ENA, LOW);
   Serial.println(tickCount);
@@ -71,7 +71,7 @@ void turn(int degs) {
  
 void tickCounter() {
   tickCount++;
-  prevTime = time;
-  time = micros();
-  DT = time - prevTime;
+  prevTime = currentTime;
+  currentTime = micros();
+  DT = currentTime - prevTime;
 }
