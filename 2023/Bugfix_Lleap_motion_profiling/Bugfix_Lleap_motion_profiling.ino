@@ -8,12 +8,16 @@
 #define maxVel 2500 //Maximum Velocity of Motor (RPM)
 
 int tickCount = 0;
+int vel = 0;
 
 float DT = 0;
 float DPT = DPR / TPR;
 
-unsigned long time = 0;
+unsigned long currentTime = 0;
 unsigned long prevTime = 0;
+unsigned long tOffset = 0;
+unsigned long t = 0;
+unsigned long prevt = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -23,17 +27,42 @@ void setup() {
   pinMode(PWM, OUTPUT);
   pinMode (ChA, INPUT);
   attachInterrupt(digitalPinToInterrupt(ChA), tickCounter, RISING); //run tickCounter everytime the Hall Effect sensor triggers high
-  time = micros();
+  currentTime = micros();
   prevTime = micros();
 
   digitalWrite(ENA, LOW);
   analogWrite(PWM, 0);
-
+  
+  tOffset = micros();
+  t = micros() - tOffset;
+  prevt = t;
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-   
+
+  prevt = t;
+  t = micros() - tOffset;
+  
+  // Until the motor has run for 1/3 of a second accelerate to a max velocity of 127 analog output
+  if (0 <= t < 3333333){
+    vel = vel + (127/3333333)*(t-prevt);
+    analogWrite(PWM, vel);
+  }
+  // After the motor has run for 1/3 of a second and until it has run for 2/3 of a second run at constant velocity of 127 analog output
+  else if (3333333 <= t < 6666666){
+    analogWrite(PWM, vel);
+  }
+  // After the motor has run for 2/3 of a second and until it has run for 1 second deaccelerate to velocity of 0
+  else if (6666666 < t < 10000000){
+    vel = vel - (127/333333)*(t-prevt);
+    analogWrite(PWM, vel);
+  }
+  else {
+    tOffset = micros();
+  }
+
+  Serial.println(vel);
 }
 
 float motionProfiling(float aMax, float vMax, float x, unsigned long dt_mp) { 
@@ -98,7 +127,7 @@ float motionProfiling(float aMax, float vMax, float x, unsigned long dt_mp) {
 
 void tickCounter() {
   tickCount++;
-  prevTime = time;
-  time = micros();
-  DT = time - prevTime;
+  prevTime = currentTime;
+  currentTime = micros();
+  DT = currentTime - prevTime;
 }
