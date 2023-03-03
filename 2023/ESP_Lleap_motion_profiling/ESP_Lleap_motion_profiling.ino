@@ -19,6 +19,8 @@ float DPT = DPR / TPR;
 
 unsigned long currentTime = 0;
 unsigned long prevTime = 0;
+unsigned long PIDOffset = 0;
+unsigned long PIDTime = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -34,7 +36,7 @@ void setup() {
   digitalWrite(ENA, LOW);
   dacWrite(DAC, 0);
 
-  PID(108, 360, 3600, 10); // 108 degs/s^2, 360 degs/s, 3600 degs, 10 sec  
+  PID((108*10^(-12)), (360*10^(-6)), 3600); // 108 degs/microsec^2, 360 degs/microsec, 3600 degs  
 
 }
 
@@ -43,22 +45,25 @@ void loop() {
    
 }
 
-void PID(float maxAccel, float maxSPD, float degs, float chngTime) {
-   tickCount = 0;
-   int sumError = 0;
-   int prevError = degs - (DPT * tickCount); // Set previous error
-   while ((degs - (DPT * tickCount)) > ERROR_MARGIN) {  // while the actual degrees minus the target degrees is greater than the error margin
-      float instantTargetPosition = motionProfiling(maxAccel, maxSPD, degs, chngTime);
-      int error = instantTargetPosition - (DPT * tickCount); // Set current error to the difference between instant target degrees and actual degrees
-      double P = Kp * error;
-      sumError += error * DT; // Integral of error with respect to currentTime
-      double I = Ki * sumError;
-      int changeError = (error - prevError) / DT; // Derivative of error with respect to currentTime
-      double D = Kd * changeError;
-      long vel = P + I + D;
+void PID(float maxAccel, float maxSPD, float degs) {
+  tickCount = 0;
+  int sumError = 0;
+  int prevError = degs - (DPT * tickCount); // Set previous error
+  PIDOffset = micros();
+  while ((degs - (DPT * tickCount)) > ERROR_MARGIN) {  // while the actual degrees minus the target degrees is greater than the error margin
+    PIDTime = micros() - PIDOffset;
+    float instantTargetPosition = motionProfiling(maxAccel, maxSPD, degs, PIDTime);
+    Serial.println(instantTargetPosition);
+    int error = instantTargetPosition - (DPT * tickCount); // Set current error to the difference between instant target degrees and actual degrees
+    double P = Kp * error;
+    sumError += error * DT; // Integral of error with respect to currentTime
+    double I = Ki * sumError;
+    int changeError = (error - prevError) / DT; // Derivative of error with respect to currentTime
+    double D = Kd * changeError;
+    long vel = P + I + D;
 
-      dacWrite(DAC, map(vel, 0, maxVel, 0, 255));
-      prevError = error;
+    dacWrite(DAC, map(vel, 0, maxVel, 0, 255));
+    prevError = error;
    }
 }
 
