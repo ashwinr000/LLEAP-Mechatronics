@@ -1,20 +1,3 @@
-#define ENA 7
-#define PWM 9
-#define ChA 2
-
-#define DPR 360.0 // Degrees rotated by joint per revolution of motor: 360 / (Revolutions of Motor / 1 Revolution of Joint)
-#define TPR 11.0 // Hall Effect Sensor Ticks per Revolution of motor
-
-#define maxVel 2500 //Maximum Velocity of Motor (RPM)
-
-int tickCount = 0;
-int vel = 0;
-
-float DT = 0;
-float DPT = DPR / TPR;
-
-unsigned long currentTime = 0;
-unsigned long prevTime = 0;
 unsigned long tOffset = 0;
 unsigned long t = 0;
 unsigned long prevt = 0;
@@ -22,47 +5,11 @@ unsigned long prevt = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
- 
-  pinMode(ENA, OUTPUT);
-  pinMode(PWM, OUTPUT);
-  pinMode (ChA, INPUT);
-  attachInterrupt(digitalPinToInterrupt(ChA), tickCounter, RISING); //run tickCounter everytime the Hall Effect sensor triggers high
-  currentTime = micros();
-  prevTime = micros();
-
-  digitalWrite(ENA, LOW);
-  analogWrite(PWM, 0);
-  
-  tOffset = micros();
-  t = micros() - tOffset;
-  prevt = t;
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-
-  prevt = t;
-  t = micros() - tOffset;
   
-  // Until the motor has run for 1/3 of a second accelerate to a max velocity of 127 analog output
-  if (0 <= t < 3333333){
-    vel = vel + (127/3333333)*(t-prevt);
-    analogWrite(PWM, vel);
-  }
-  // After the motor has run for 1/3 of a second and until it has run for 2/3 of a second run at constant velocity of 127 analog output
-  else if (3333333 <= t < 6666666){
-    analogWrite(PWM, vel);
-  }
-  // After the motor has run for 2/3 of a second and until it has run for 1 second deaccelerate to velocity of 0
-  else if (6666666 < t < 10000000){
-    vel = vel - (127/333333)*(t-prevt);
-    analogWrite(PWM, vel);
-  }
-  else {
-    tOffset = micros();
-  }
-
-  Serial.println(vel);
 }
 
 float motionProfiling(float aMax, float vMax, float x, unsigned long dt_mp) { 
@@ -123,11 +70,4 @@ float motionProfiling(float aMax, float vMax, float x, unsigned long dt_mp) {
     // use the kinematic equations to calculate the instantaneous desired position
     return accel_x + cruise_x + vMax * deaccel_time- 0.5 * aMax * deaccel_time * deaccel_time;
   }
-}
-
-void tickCounter() {
-  tickCount++;
-  prevTime = currentTime;
-  currentTime = micros();
-  DT = currentTime - prevTime;
 }
