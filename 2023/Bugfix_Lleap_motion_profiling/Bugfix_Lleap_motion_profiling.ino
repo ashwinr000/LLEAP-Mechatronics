@@ -1,6 +1,7 @@
-unsigned long tOffset = 0;
+#define Dt 5
+
+float target = 0;
 unsigned long t = 0;
-unsigned long prevt = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -9,7 +10,12 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  
+  while (t < 20000) {
+    target = motionProfiling(0.000108, 0.360, 3600, t);
+    Serial.println(target);
+    delay(Dt);
+    t = t + Dt;
+  }
 }
 
 float motionProfiling(float aMax, float vMax, float x, unsigned long dt_mp) { 

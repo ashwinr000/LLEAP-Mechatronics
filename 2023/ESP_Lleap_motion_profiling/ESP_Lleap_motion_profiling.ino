@@ -36,7 +36,7 @@ void setup() {
   digitalWrite(ENA, LOW);
   dacWrite(DAC, 0);
 
-  PID((108, 360, 3600); // 108 degs/sec, 360 degs/sec, 3600 degs  
+  PID(108, 360, 3600); // 108 degs/sec^2, 360 degs/sec, 3600 degs  
 
 }
 
