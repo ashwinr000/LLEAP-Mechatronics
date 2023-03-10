@@ -60,7 +60,7 @@ float motionProfiling(float aMax, float vMax, float x, unsigned long dt_mp) {
 
     // if we're cruising
     else if (dt_mp < deaccel_time) {
-    accel_dt = 0.5 * aMax * accel_dt * accel_dt;
+    accel_x = 0.5 * aMax * accel_dt * accel_dt;
     float cruise_dt_mp = dt_mp - accel_dt;
 
     // use the kinematic equation for constant velocity
@@ -74,6 +74,6 @@ float motionProfiling(float aMax, float vMax, float x, unsigned long dt_mp) {
     deaccel_time = dt_mp - deaccel_time;
 
     // use the kinematic equations to calculate the instantaneous desired position
-    return accel_x + cruise_x + vMax * deaccel_time- 0.5 * aMax * deaccel_time * deaccel_time;
+    return accel_x + cruise_x + vMax * deaccel_time - 0.5 * aMax * deaccel_time * deaccel_time;
   }
 }
