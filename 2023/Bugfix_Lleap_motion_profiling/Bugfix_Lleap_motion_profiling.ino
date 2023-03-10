@@ -11,13 +11,14 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   while (target < 3600) {
-    target = motionProfiling(0.000144, 0.720, 3600, t);
+    target = motionProfiling(0.000162, 0.540, 3600, t);
     Serial.println(target);
     delay(Dt);
     t = t + Dt;
   }
 }
 
+// For a given totalDistance and totalTime: vMax = totalDistance/(2*(totalTime/3)) & aMax = totalDistance/(2*((totalTime/3)^2))
 float motionProfiling(float aMax, float vMax, float totalDistance, unsigned long currentTime) { 
     // totalDistance is total distance for motion profiling
     // currentTime is current time during motion profiling 
