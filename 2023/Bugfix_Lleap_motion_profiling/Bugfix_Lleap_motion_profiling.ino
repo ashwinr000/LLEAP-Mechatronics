@@ -10,8 +10,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  while (t < 10000) {
-    target = motionProfiling(0.000216, 0.360, 3600, t);
+  while (target < 3600) {
+    target = motionProfiling(0.000144, 0.720, 3600, t);
     Serial.println(target);
     delay(Dt);
     t = t + Dt;
