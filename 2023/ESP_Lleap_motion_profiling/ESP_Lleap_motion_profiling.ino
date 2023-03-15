@@ -36,7 +36,7 @@ void setup() {
   digitalWrite(ENA, LOW);
   //dacWrite(DAC, 0);
 
-  PID(0.000108, 0.000360, 3600); // 108 degs/sec^2, 360 degs/sec, 3600 degs  
+  PID(0.000000000162, 0.000540, 3600); // 162 degs/sec^2 -> 0.000000000162 degs/microsecond^2, 540 degs/sec -> 0.000540 degs/microsecond, 3600 degs  
 
 }
 
@@ -52,8 +52,9 @@ void PID(float maxAccel, float maxSPD, float degs) {
   PIDOffset = micros();
   while ((degs - (DPT * tickCount)) > ERROR_MARGIN) {  // while the actual degrees minus the target degrees is greater than the error margin
     PIDTime = (micros() - PIDOffset);
+    // Serial.println(PIDTime);
     float instantTargetPosition = motionProfiling(maxAccel, maxSPD, degs, PIDTime);
-    //Serial.println(instantTargetPosition);
+    // Serial.println(instantTargetPosition);
     int error = instantTargetPosition - (DPT * tickCount); // Set current error to the difference between instant target degrees and actual degrees
     double P = Kp * error;
     sumError += error * DT; // Integral of error with respect to currentTime
