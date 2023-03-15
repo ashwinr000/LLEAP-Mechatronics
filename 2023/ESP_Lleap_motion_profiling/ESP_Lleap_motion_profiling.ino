@@ -36,8 +36,8 @@ void setup() {
   digitalWrite(ENA, LOW);
   //dacWrite(DAC, 0);
 
-  PID(0.000000000162, 0.000540, 3600); // 162 degs/sec^2 -> 0.000000000162 degs/microsecond^2, 540 degs/sec -> 0.000540 degs/microsecond, 3600 degs  
-
+  PID(162, 540, 3600); // 162 degs/sec^2, 540 degs/sec, 3600 degs
+  
 }
 
 void loop() {
@@ -49,18 +49,25 @@ void PID(float maxAccel, float maxSPD, float degs) {
   tickCount = 0;
   int sumError = 0;
   int prevError = degs - (DPT * tickCount); // Set previous error
+  
   PIDOffset = micros();
   while ((degs - (DPT * tickCount)) > ERROR_MARGIN) {  // while the actual degrees minus the target degrees is greater than the error margin
-    PIDTime = (micros() - PIDOffset);
-    // Serial.println(PIDTime);
-    float instantTargetPosition = motionProfiling(maxAccel, maxSPD, degs, PIDTime);
-    // Serial.println(instantTargetPosition);
+    // Use motion profiling to generate an instantaneos target position
+    PIDTime = micros() - PIDOffset;
+    float instantTargetPosition = motionProfiling(maxAccel*pow(10,-12), maxSPD*pow(10,-6), degs, PIDTime); // maxAccel*10^-12 to convert from sec^2 to micros^2, maxSPD*pow(10,-6) to convert from sec to micros
+    
+    // Proportional Error Correction
     int error = instantTargetPosition - (DPT * tickCount); // Set current error to the difference between instant target degrees and actual degrees
     double P = Kp * error;
+    
+    // Integral Error Correction
     sumError += error * DT; // Integral of error with respect to currentTime
     double I = Ki * sumError;
+    
+    // Derivative Error Correction
     int changeError = (error - prevError) / DT; // Derivative of error with respect to currentTime
     double D = Kd * changeError;
+    
     long vel = P + I + D;
     Serial.println(vel);
     
