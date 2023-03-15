@@ -34,9 +34,9 @@ void setup() {
   prevTime = micros();
 
   digitalWrite(ENA, LOW);
-  dacWrite(DAC, 0);
+  //dacWrite(DAC, 0);
 
-  PID(108, 360, 3600); // 108 degs/sec^2, 360 degs/sec, 3600 degs  
+  PID(0.000108, 0.000360, 3600); // 108 degs/sec^2, 360 degs/sec, 3600 degs  
 
 }
 
@@ -51,9 +51,9 @@ void PID(float maxAccel, float maxSPD, float degs) {
   int prevError = degs - (DPT * tickCount); // Set previous error
   PIDOffset = micros();
   while ((degs - (DPT * tickCount)) > ERROR_MARGIN) {  // while the actual degrees minus the target degrees is greater than the error margin
-    PIDTime = (micros() - PIDOffset)*10^-6;
+    PIDTime = (micros() - PIDOffset);
     float instantTargetPosition = motionProfiling(maxAccel, maxSPD, degs, PIDTime);
-    Serial.println(instantTargetPosition);
+    //Serial.println(instantTargetPosition);
     int error = instantTargetPosition - (DPT * tickCount); // Set current error to the difference between instant target degrees and actual degrees
     double P = Kp * error;
     sumError += error * DT; // Integral of error with respect to currentTime
@@ -61,76 +61,75 @@ void PID(float maxAccel, float maxSPD, float degs) {
     int changeError = (error - prevError) / DT; // Derivative of error with respect to currentTime
     double D = Kd * changeError;
     long vel = P + I + D;
-
-    dacWrite(DAC, map(vel, 0, maxVel, 0, 255));
+    Serial.println(vel);
+    
+    //dacWrite(DAC, map(vel, 0, maxVel, 0, 255));
     prevError = error;
-   }
+  }
 }
 
-float motionProfiling(float aMax, float vMax, float x, unsigned long dt_mp) { 
-    //x is distance for motion profiling  
-    //dt_mp is change in currentTime for motion profiling 
+// For a given totalDistance and totalTime: vMax = totalDistance/(2*(totalTime/3)) & aMax = totalDistance/(2*((totalTime/3)^2))
+float motionProfiling(float aMax, float vMax, float totalDistance, unsigned long currentTime) { 
+    // totalDistance is total distance for motion profiling
+    // currentTime is current time during motion profiling 
 
-    //calculate the currentTime it takes to accelerate to max veclocity 
-    float accel_dt = vMax/aMax;
+    // calculate the time it takes to accelerate to max veclocity 
+    float accelTime = vMax/aMax;
 
-    // half_x is the length of the distance that goes from 0 to max vecloity at max acceleration
-    // accel_x is the distance you travel across the total duration of your acceleration 
-    float half_x = x/2;
-    float accel_x = 0.5 * aMax * (accel_dt * accel_dt);
+    // halfDistance is the halfway distance between 0 and totalDistance
+    // accelDistance is the distance you travel across the total duration of the acceleration 
+    float halfDistance = totalDistance/2;
+    float accelDistance = 0.5 * aMax * (accelTime * accelTime);
 
-    if (accel_x > half_x) {
-      accel_dt = sqrt( half_x / (0.5 * aMax));   
+    // if accelDistance is greater than halfDistance the profile is impossible with that accelTime so recalculate accelTime
+    // recalculated accelTime is the time it takes to travel halfDistance while accelerating at aMax (results in triangular velocity profile aka. no cruising)
+    if (accelDistance > halfDistance) {
+      accelTime = sqrt( halfDistance / (0.5 * aMax));   
     }
-      
+    
+    // recalculate accelDistance with new accelTime
+    accelDistance = 0.5 * aMax * (accelTime * accelTime);
 
-    accel_x = 0.5 * aMax * (accel_dt * accel_dt);
+    // recalculate max velocity based on the new time we have to accelerate and decelerate 
+    vMax = aMax * accelTime;
 
-    // recalculate max velocity based on the new currentTime we have to accelerate and decelerate 
-    vMax = aMax * accel_dt;
+    // cruiseDistance is the distance traveled while cruising
+    // cruiseTime is the amount of time at cruising velocity
+    float cruiseDistance = totalDistance - (2 * accelDistance);
+    float cruiseTime = cruiseDistance / vMax;
+    float deaccelTime = accelTime + cruiseTime;
 
-    // calculate the currentTime that you're at constant max velocity (cruising distance)
-    //cruise_dt is the amount of currentTime it takes to cruise 
-    float cruise_x = x - (2 * accel_x);
-    float cruise_dt = cruise_x / vMax;
-    float deaccel_time = accel_dt + cruise_dt;
-
-    //check to see if we're still in the motion profile 
-    float entire_dt = 2 * (accel_dt) + cruise_dt; 
-    if (dt_mp > entire_dt){
-      return x;
+    // check to see if we're still in the motion profile 
+    float totalTime = 2 * (accelTime) + cruiseTime; 
+    if (currentTime > totalTime){
+      return totalDistance;
     }
 
     // if we're accelerating
-    if (dt_mp < accel_dt) {
+    if (currentTime < accelTime) {
     // use the kinematic equation for acceleration
-    return 0.5 * aMax * dt_mp * dt_mp;
+    return 0.5 * aMax * currentTime * currentTime;
     }
 
     // if we're cruising
-    else if (dt_mp < deaccel_time) {
-    accel_dt = 0.5 * aMax * accel_dt * accel_dt;
-    float cruise_dt_mp = dt_mp - accel_dt;
+    else if (currentTime < deaccelTime) {
+    accelDistance = 0.5 * aMax * accelTime * accelTime;
+    cruiseTime = currentTime - accelTime;
 
     // use the kinematic equation for constant velocity
-    return accel_x + vMax * cruise_dt_mp;
+    return accelDistance + vMax * cruiseTime;
   }
 
   // if we're decelerating
   else {
-    accel_x = 0.5 * aMax * accel_dt * accel_dt;
-    cruise_x = vMax * cruise_dt;
-    deaccel_time = dt_mp - deaccel_time;
+    accelDistance = 0.5 * aMax * accelTime * accelTime;
+    cruiseDistance = vMax * cruiseTime;
+    deaccelTime = currentTime - deaccelTime;
 
-    // use the kinematic equations to calculate the instantaneous desired position
-    return accel_x + cruise_x + vMax * deaccel_time- 0.5 * aMax * deaccel_time * deaccel_time;
+    // use the kinematic equations to calculate the instantaneous desired totalDistance
+    return accelDistance + cruiseDistance + vMax * deaccelTime - 0.5 * aMax * deaccelTime * deaccelTime;
   }
-
-
-
-
-
-  }
+}
 
 
  
