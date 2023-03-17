@@ -1,21 +1,42 @@
-#define Dt 5
+#define DT 5
 
-float target = 0;
+int vel = 0;
 unsigned long t = 0;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+
+  while (t < 10*pow(10,3)) {
+    vel = velocityOut(3600, 10*pow(10,3), t);
+    Serial.println(vel);
+    t = t + DT;
+  }
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  while (target < 3600) {
-    target = motionProfiling(0.000162, 0.540, 3600, t);
-    Serial.println(target);
-    delay(Dt);
-    t = t + Dt;
+
+}
+
+float velocityOut(float totalDistance, unsigned long totalTime, unsigned long currentTime) {
+  float vMax = totalDistance/(2*(totalTime/3));
+  float aMax = totalDistance/(2*((totalTime/3)^2));
+
+  if (currentTime < (totalTime/3)) {
+    vel = aMax*currentTime;
   }
+  else if (currentTime > (totalTime/3) && currentTime < (totalTime*(2/3))) {
+    vel = vMax;
+  }
+  else if (currentTime > (totalTime*(2/3)) && currentTime < totalTime) {
+    vel = vMax - aMax*(currentTime - (totalTime*(2/3)));
+  }
+  else {
+    vel = 0;
+  }
+
+  return vel;
 }
 
 // For a given totalDistance and totalTime: vMax = totalDistance/(2*(totalTime/3)) & aMax = totalDistance/(2*((totalTime/3)^2))
