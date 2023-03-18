@@ -5,7 +5,7 @@
 #define DPR 360.0 // Degrees rotated by joint per revolution of motor: 360 / (Revolutions of Motor / 1 Revolution of Joint)
 #define TPR 11.0 // Hall Effect Sensor Ticks per Revolution of motor
 
-#define maxVel 99000 //Maximum Velocity of Motor (degrees/second)
+#define maxVel 9900 //Maximum Velocity of Motor (degrees/second)
 
 #define ERROR_MARGIN 0
 #define Kp 1
