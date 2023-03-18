@@ -14,6 +14,9 @@ void setup() {
     vel = velocityOut(3600, 10*pow(10,6), t); // 3600 degs, 10 seconds (10*pow(10,6) microseconds), output in degs/s
     dacOut = map(vel, 0, maxSPD, 0, 255); // Convert from deg/sec to dac output value
     t = micros() - tOffset;
+
+    Serial.print(t*pow(10,-6));
+    Serial.print(" ");
     Serial.print(t);
     Serial.print(" ");
     Serial.print(vel);
