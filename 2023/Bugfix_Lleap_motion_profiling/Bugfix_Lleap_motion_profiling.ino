@@ -1,6 +1,7 @@
-#define DT 500
+#define maxSPD 9900 // maximum speed of motor in degs/sec
 
-int vel = 0;
+long vel = 0;
+int dacOut = 0;
 unsigned long t = 0;
 unsigned long tOffset = 0;
 
@@ -10,10 +11,13 @@ void setup() {
   tOffset = micros();
   while (t < 10*pow(10,6)) {
     vel = velocityOut(3600, 10*pow(10,6), t); // 3600 degs, 10 seconds (10*pow(10,6) microseconds), output in degs/s
+    dacOut = map(vel, 0, maxSPD, 0, 255);
     t = micros() - tOffset;
     Serial.print(t);
     Serial.print(" ");
     Serial.print(vel);
+    Serial.print(" ");
+    Serial.print(dacOut);
     Serial.println();
   }
 }
