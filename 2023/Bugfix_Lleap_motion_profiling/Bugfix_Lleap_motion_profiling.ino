@@ -1,16 +1,20 @@
-#define DT 5
+#define DT 500
 
 int vel = 0;
 unsigned long t = 0;
+unsigned long tOffset = 0;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-
-  while (t < 10*pow(10,3)) {
-    vel = velocityOut(3600, 10*pow(10,3), t);
-    Serial.println(vel);
-    t = t + DT;
+  tOffset = micros();
+  while (t < 10*pow(10,6)) {
+    vel = velocityOut(3600, 10*pow(10,6), t); // 3600 degs, 10 seconds (10*pow(10,6) microseconds), output in degs/s
+    t = micros() - tOffset;
+    Serial.print(t);
+    Serial.print(" ");
+    Serial.print(vel);
+    Serial.println();
   }
 }
 
@@ -20,17 +24,17 @@ void loop() {
 }
 
 float velocityOut(float totalDistance, unsigned long totalTime, unsigned long currentTime) {
-  float vMax = totalDistance/(2*(totalTime/3));
-  float aMax = totalDistance/(2*((totalTime/3)^2));
+  float vMax = (totalDistance/(2*(totalTime/3)))*pow(10,6);
+  float aMax = (totalDistance/(2*squaref(totalTime/3)))*pow(10,12);
 
   if (currentTime < (totalTime/3)) {
-    vel = aMax*currentTime;
+    vel = aMax*currentTime*pow(10,-6);
   }
-  else if (currentTime > (totalTime/3) && currentTime < (totalTime*(2/3))) {
+  else if (currentTime > (totalTime/3) && currentTime < ((2*totalTime)/3)) {
     vel = vMax;
   }
-  else if (currentTime > (totalTime*(2/3)) && currentTime < totalTime) {
-    vel = vMax - aMax*(currentTime - (totalTime*(2/3)));
+  else if (currentTime > ((2*totalTime)/3) && currentTime < totalTime) {
+    vel = vMax - aMax*(currentTime - (2*totalTime)/3)*pow(10,-6);
   }
   else {
     vel = 0;
