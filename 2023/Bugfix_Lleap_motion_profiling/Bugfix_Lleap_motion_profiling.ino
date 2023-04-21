@@ -32,6 +32,8 @@ void setup() {
     Serial.print(dacOut);
     Serial.println();
   }
+
+  dacWrite(DAC, 0);  
 }
 
 void loop() {
