@@ -1,3 +1,7 @@
+#define ChA 34
+#define DAC 25
+#define TPR 11
+
 #define maxSPD 9900 // maximum speed of motor in degs/sec
 
 long vel = 0;
@@ -9,11 +13,15 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
 
+  pinMode(DAC, OUTPUT);
+
   tOffset = micros();
   while (t < 10*pow(10,6)) {
     vel = velocityOut(3600, 10*pow(10,6), t); // 3600 degs, 10 seconds (10*pow(10,6) microseconds), output in degs/s
     dacOut = map(vel, 0, maxSPD, 0, 255); // Convert from deg/sec to dac output value
     t = micros() - tOffset;
+
+    dacWrite(DAC, dacOut);
 
     Serial.print(t*pow(10,-6));
     Serial.print(" ");
@@ -33,7 +41,7 @@ void loop() {
 
 float velocityOut(float totalDistance, unsigned long totalTime, unsigned long currentTime) {
   float vMax = (totalDistance/(2*(totalTime/3)))*pow(10,6);
-  float aMax = (totalDistance/(2*squaref(totalTime/3)))*pow(10,12);
+  float aMax = (totalDistance/(2*pow((totalTime/3),2)))*pow(10,12);
 
   if (currentTime < (totalTime/3)) {
     vel = aMax*currentTime*pow(10,-6);
