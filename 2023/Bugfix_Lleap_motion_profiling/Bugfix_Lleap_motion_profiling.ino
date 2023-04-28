@@ -2,8 +2,6 @@
 #define DAC 25
 #define TPR 11
 
-#define maxSPD 9900 // maximum speed of motor in degs/sec
-
 long vel = 0;
 int dacOut = 0;
 unsigned long t = 0;
@@ -17,8 +15,8 @@ void setup() {
 
   tOffset = micros();
   while (t < 10*pow(10,6)) {
-    vel = velocityOut(3600, 10*pow(10,6), t); // 3600 degs, 10 seconds (10*pow(10,6) microseconds), output in degs/s
-    dacOut = map(vel, 0, maxSPD, 0, 255); // Convert from deg/sec to dac output value
+    vel = velocityOut(20, 10*pow(10,6), t); // 20 revolutions, 10 seconds (10*pow(10,6) microseconds), output in degs/s
+    dacOut = mapping(vel);
     t = micros() - tOffset;
 
     dacWrite(DAC, dacOut);
@@ -41,9 +39,26 @@ void loop() {
 
 }
 
+int mapping(float velocity) {
+  //Serial.print("RPM ");
+  //Serial.print(velocity);
+  //Serial.println();
+  float volts = 0.1 + (velocity - 0.0)*((5.0 - 0.1)/(5000.0-0.0));
+  //Serial.print("Volts ");
+  //Serial.print(volts);
+  //Serial.println();
+  int dacOut = 0 + (volts - 0.1)*((255 - 0)/(3.162-0.1));
+
+  if (dacOut < 0 || dacOut > 255) {
+    dacOut = max(min(255, dacOut), 0);
+  }
+
+  return dacOut;
+}
+
 float velocityOut(float totalDistance, unsigned long totalTime, unsigned long currentTime) {
-  float vMax = (totalDistance/(2*(totalTime/3)))*pow(10,6);
-  float aMax = (totalDistance/(2*pow((totalTime/3),2)))*pow(10,12);
+  float vMax = ((totalDistance*360)/(2*(totalTime/3)))*pow(10,6);
+  float aMax = ((totalDistance*360)/(2*pow((totalTime/3),2)))*pow(10,12);
 
   if (currentTime < (totalTime/3)) {
     vel = aMax*currentTime*pow(10,-6);
@@ -52,13 +67,13 @@ float velocityOut(float totalDistance, unsigned long totalTime, unsigned long cu
     vel = vMax;
   }
   else if (currentTime > ((2*totalTime)/3) && currentTime < totalTime) {
-    vel = vMax - aMax*(currentTime - (2*totalTime)/3)*pow(10,-6);
+    vel = vMax - aMax*(currentTime - (2*totalTime)/3)*pow(10,-6);  
   }
   else {
     vel = 0;
   }
 
-  return vel;
+  return vel/6;
 }
 
 // For a given totalDistance and totalTime: vMax = totalDistance/(2*(totalTime/3)) & aMax = totalDistance/(2*((totalTime/3)^2))
