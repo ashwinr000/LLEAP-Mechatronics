@@ -4,8 +4,8 @@
 
 long vel = 0;
 int dacOut = 0;
-unsigned long t = 0;
-unsigned long tOffset = 0;
+//unsigned long t = 0;
+//unsigned long tOffset = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -14,24 +14,8 @@ void setup() {
   pinMode(DAC, OUTPUT);
 
   tOffset = micros();
-  while (t < 10*pow(10,6)) {
-    vel = velocityOut(20, 10*pow(10,6), t); // 20 revolutions, 10 seconds (10*pow(10,6) microseconds), output in degs/s
-    dacOut = mapping(vel);
-    t = micros() - tOffset;
-
-    dacWrite(DAC, dacOut);
-
-    Serial.print(t*pow(10,-6));
-    Serial.print(" ");
-    Serial.print(t);
-    Serial.print(" ");
-    Serial.print(vel);
-    Serial.print(" ");
-    Serial.print(dacOut);
-    Serial.println();
-  }
-
-  dacWrite(DAC, 0);  
+  
+  trapezoid_profile(30, 5);
 }
 
 void loop() {
@@ -54,6 +38,29 @@ int mapping(float velocity) {
   }
 
   return dacOut;
+}
+
+void trapezoid_profile(int num_revolutions, unsigned long duration) {
+  unsigned long t = 0;
+  unsigned long tOffset = micros();
+  while (t < duration*pow(10,6)) {
+    vel = velocityOut(num_revolutions, duration*pow(10,6), t); // 20 revolutions, 10 seconds (10*pow(10,6) microseconds), output in degs/s
+    dacOut = mapping(vel);
+    t = micros() - tOffset;
+
+    dacWrite(DAC, dacOut);
+
+    Serial.print(t*pow(10,-6));
+    Serial.print(" ");
+    Serial.print(t);
+    Serial.print(" ");
+    Serial.print(vel);
+    Serial.print(" ");
+    Serial.print(dacOut);
+    Serial.println();
+  }
+
+  dacWrite(DAC, 0);
 }
 
 float velocityOut(float totalDistance, unsigned long totalTime, unsigned long currentTime) {
