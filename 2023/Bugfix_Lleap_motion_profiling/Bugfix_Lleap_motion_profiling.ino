@@ -1,38 +1,38 @@
 #define ChA 34
 #define DAC 25
 #define TPR 11
+#define GR 300
 
 long vel = 0;
 int dacOut = 0;
-//unsigned long t = 0;
-//unsigned long tOffset = 0;
+String angle;
+String t;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
 
   pinMode(DAC, OUTPUT);
-
-  tOffset = micros();
-  
-  trapezoid_profile(30, 5);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+    if (Serial.available() > 0) {
+      String input = Serial.readString();
+      int index = input.indexOf(' ');
+      if (index != -1){
+       angle = input.substring(0, index);
+       t = input.substring(index+1);
+      }
+      trapezoid_profile(angle.toInt(), t.toInt());
+  }
 }
 
-int mapping(float velocity) {
-  //Serial.print("RPM ");
-  //Serial.print(velocity);
-  //Serial.println();
-  float volts = 0.1 + (velocity - 0.0)*((5.0 - 0.1)/(5000.0-0.0));
-  //Serial.print("Volts ");
-  //Serial.print(volts);
-  //Serial.println();
-  int dacOut = 0 + (volts - 0.1)*((255 - 0)/(3.162-0.1));
+int dacOutput(float velocity) {
+  float volts = 0.1 + (velocity - 0.0)*((5.0 - 0.1)/(5000.0-0.0)); // Convert from RPM to a Voltage Value
+  int dacOut = 0 + (volts - 0.1)*((255 - 0)/(3.162-0.1)); // Covert from Voltage to DAC Output Value
 
+  // Check if the DAC Output is Outside of its Acceptable Range
   if (dacOut < 0 || dacOut > 255) {
     dacOut = max(min(255, dacOut), 0);
   }
@@ -40,12 +40,13 @@ int mapping(float velocity) {
   return dacOut;
 }
 
-void trapezoid_profile(int num_revolutions, unsigned long duration) {
+// Input a number of degrees travelled by the joint and a duration in seconds
+void trapezoid_profile(int num_degs, unsigned long duration) {
   unsigned long t = 0;
-  unsigned long tOffset = micros();
-  while (t < duration*pow(10,6)) {
-    vel = velocityOut(num_revolutions, duration*pow(10,6), t); // 20 revolutions, 10 seconds (10*pow(10,6) microseconds), output in degs/s
-    dacOut = mapping(vel);
+  unsigned long tOffset = micros(); // Set the current time as the offset for the time
+  while (t < duration*pow(10,6)) { // While the current time is less than the duration
+    vel = velocityOut(num_degs*GR, duration*pow(10,6), t); // Calculate what the current velocity should be
+    dacOut = dacOutput(vel); // Calculate the DAC Output of the current velocity
     t = micros() - tOffset;
 
     dacWrite(DAC, dacOut);
@@ -64,23 +65,23 @@ void trapezoid_profile(int num_revolutions, unsigned long duration) {
 }
 
 float velocityOut(float totalDistance, unsigned long totalTime, unsigned long currentTime) {
-  float vMax = ((totalDistance*360)/(2*(totalTime/3)))*pow(10,6);
-  float aMax = ((totalDistance*360)/(2*pow((totalTime/3),2)))*pow(10,12);
+  float vMax = ((totalDistance)/(2*(totalTime/3)))*pow(10,6); //Calculate Max Velocity from the total distance and total time, assuming equal time accellerating, coasting, and deccellerating
+  float aMax = ((totalDistance)/(2*pow((totalTime/3),2)))*pow(10,12); //Calculate Max Accelleration using the same method as above
 
   if (currentTime < (totalTime/3)) {
-    vel = aMax*currentTime*pow(10,-6);
+    vel = aMax*currentTime*pow(10,-6); // While accelerating calculate the current velocity from time and acceleration
   }
   else if (currentTime > (totalTime/3) && currentTime < ((2*totalTime)/3)) {
-    vel = vMax;
+    vel = vMax; // While coasting the current velocity is the max velocity
   }
   else if (currentTime > ((2*totalTime)/3) && currentTime < totalTime) {
-    vel = vMax - aMax*(currentTime - (2*totalTime)/3)*pow(10,-6);  
+    vel = vMax - aMax*(currentTime - (2*totalTime)/3)*pow(10,-6);  // While deccelerating calculate the current from time, acceleration, and the coasting velocity
   }
   else {
-    vel = 0;
+    vel = 0; // If the duration is over the current velocity should be zero
   }
 
-  return vel/6;
+  return vel/6; // Return current velocity in RPM
 }
 
 // For a given totalDistance and totalTime: vMax = totalDistance/(2*(totalTime/3)) & aMax = totalDistance/(2*((totalTime/3)^2))
