@@ -6,52 +6,56 @@
 float velocity = 0;
 
 void setup() {
-  // put your setup code here, tnow run once:
+  // put your setup code here, to run once:
   Serial.begin(115200);
   //splines(0,0,45,0,0.3);
 }
 
 void loop() {
-  // put your main code here, tnow run repeatedly:
+  // put your main code here, to run repeatedly:
   if (Serial.available() > 0) {
-    //splines(0,0,45,0,0.3);
-      /*String input = Serial.readString();
-      int index = input.indexOf(' ');
-      String x1_s = "";
-      String v1_s = "";
-      String x2_s = "";
-      String v2_s = "";
-      String duration_s = "";
+    String input = Serial.readString();
+    int index = input.indexOf(' ');
+    String x1_s = "";
+    String v1_s = "";
+    String x2_s = "";
+    String v2_s = "";
+    String duration_s = "";
 
-      if (index != -1){ 
-        x1_s = input.substring(0, index);
+    if (index != -1){ 
+      x1_s = input.substring(0, index);
+      
+      if (index != -1){    
+        input = input.substring(index+1);
+        index = input.indexOf(' ');
+        v1_s = input.substring(0, index);
+        
         if (index != -1){    
           input = input.substring(index+1);
           index = input.indexOf(' ');
-          v1_s = input.substring(0, index);
+          x2_s = input.substring(0, index);
+          
+          if (index != -1){    
+            input = input.substring(index+1);
+            index = input.indexOf(' ');
+            v2_s = input.substring(0, index);
+            
             if (index != -1){    
               input = input.substring(index+1);
               index = input.indexOf(' ');
-              x2_s = input.substring(0, index);
-                if (index != -1){    
-                  input = input.substring(index+1);
-                  index = input.indexOf(' ');
-                  v2_s = input.substring(0, index);
-                    if (index != -1){    
-                      input = input.substring(index+1);
-                      index = input.indexOf(' ');
-                      duration_s = input.substring(0, index);
-                    }
-                }
+              duration_s = input.substring(0, index);
             }
+          }
         }
       }
+    }
     float x1 = x1_s.toFloat();
     float v1 = v1_s.toFloat();
     float x2 = x2_s.toFloat();
     float v2 = v2_s.toFloat();
     float duration = duration_s.toFloat();
-    splines(x1,v1,x2,v2,duration);*/
+
+    splines(x1,v1,x2,v2,duration);
   }
 } 
 
@@ -116,7 +120,7 @@ int MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, flo
   float c2 = r2/den;
   float c3 = r3/den;
   float c4 = r4/den;
-;
+
   float vel = 3*c1*pow(tnow,2) + 2*c2*tnow + c3; // Current Velocity in degs/s
   velocity = vel/60; // Convert from degs/s to RPM
 
