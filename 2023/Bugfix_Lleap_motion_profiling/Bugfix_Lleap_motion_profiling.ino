@@ -146,3 +146,42 @@ float motionProfiling(float aMax, float vMax, float totalDistance, unsigned long
     return accelDistance + cruiseDistance + vMax * deaccelTime - 0.5 * aMax * deaccelTime * deaccelTime;
   }
 }
+
+
+
+
+
+void asdf(){
+    Serial.begin(115200);
+  // put your main code here, to run repeatedly:
+  if (Serial.available() > 0) {
+      String input = Serial.readString();
+      int index = input.indexOf(' ');
+      String x1_s = "";
+      String v1_s = "";
+      String x2_s = "";
+      String v2_s = "";
+      String duration_s = "";
+
+      if (index != -1){ 
+        x1_s = input.substring(0, index);
+        if (index != -1){    
+          input = input.substring(index+1);
+          v1_s = input.substring(0, index);
+            if (index != -1){    
+              input = input.substring(index+1);
+              x2_s = input.substring(0, index);
+                if (index != -1){    
+                  input = input.substring(index+1);
+                  v2_s = input.substring(0, index);
+                    if (index != -1){    
+                      input = input.substring(index+1);
+                      duration_s = input.substring(0, index);
+                    }
+                }
+            }
+        }
+      }
+      Serial.print("[ " + x1_s +" | " + v1_s +" | " + x2_s+" | " + v2_s+" | " + duration_s +" ]");
+  }
+}
