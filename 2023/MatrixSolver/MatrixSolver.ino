@@ -1,15 +1,44 @@
+#define ChA 34
+#define DAC 25
+#define TPR 11
+#define GR 300
+
+float velocity = 0;
+
 void setup() {
-  // put your setup code here, to run once:
+  // put your setup code here, tnow run once:
   Serial.begin(115200);
-  MatrixSolver(1, 2, 3, 4, 5, 6, 5);
+  splines(0,0,45,0,0.3);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // put your main code here, tnow run repeatedly:
 
 } 
 
-float MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, float tnow) {
+// Input 2 position and velocities of the joint and the duration of the move
+void splines(float x1, float v1, float x2, float v2, float duration) {
+  float t = micros()*pow(10,-6);
+  float tStart = t;
+  float tEnd = tStart + duration;
+  while (t < tEnd) { // While the current time is less than the end time
+    int dacOut = MatrixSolver(x1*GR, v1*GR, tStart, x2*GR, v2*GR, tEnd, t); // Calculate what the current velocity should be
+    t = micros()*pow(10,-6);
+
+    dacWrite(DAC, dacOut);
+
+    Serial.print(t);
+    Serial.print(" ");
+    Serial.print(velocity);
+    Serial.print(" ");
+    Serial.print(dacOut);
+    Serial.println();
+  }
+
+  dacWrite(DAC, 0);
+}
+
+int MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, float tnow) {
   // 1st Equation/Row
   float a = pow(t1,3);
   float b = pow(t1,2);
@@ -48,9 +77,17 @@ float MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, f
   float c2 = r2/den;
   float c3 = r3/den;
   float c4 = r4/den;
+;
+  float vel = 3*c1*pow(tnow,2) + 2*c2*tnow + c3; // Current Velocity in degs/s
+  velocity = vel/60; // Convert from degs/s to RPM
 
-  float to = tnow-t1;
-  float v_out = 3*c1*pow(to,2) + 2*c2*to + c3;
+  float volts = 0.1 + (velocity - 0.0)*((5.0 - 0.1)/(5000.0-0.0)); // Convert from RPM to a Voltage Value
+  int dacOut = 0 + (volts - 0.1)*((255 - 0)/(3.162-0.1)); // Covert from Voltage to DAC Output Value
 
-  return v_out;
+  // Check if the DAC Output is Outside of its Acceptable Range
+  if (dacOut < 0 || dacOut > 255) {
+    dacOut = max(min(255, dacOut), 0);
+  }
+
+  return dacOut;
 }
