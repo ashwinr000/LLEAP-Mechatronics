@@ -1,32 +1,7 @@
-float c1;
-float c2;
-float c3;
-float c4;
-
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  MatrixSolver(1, 2, 3, 4, 5, 6);
-  float test[] = {c1, c2, c3, c4};
-
-  Serial.println(test[0]);
-  Serial.println(test[1]);
-  Serial.println(test[2]);
-  Serial.println(test[3]);
-  Serial.println();
-
-  MatrixSolver(6, 5, 4, 3, 2, 1);
-  float test2[] = {c1, c2, c3, c4};
-  
-  Serial.println(test[0]);
-  Serial.println(test[1]);
-  Serial.println(test[2]);
-  Serial.println(test[3]);
-  Serial.println();
-  Serial.println(test2[0]);
-  Serial.println(test2[1]);
-  Serial.println(test2[2]);
-  Serial.println(test2[3]);
+  MatrixSolver(1, 2, 3, 4, 5, 6, 5);
 }
 
 void loop() {
@@ -34,7 +9,7 @@ void loop() {
 
 } 
 
-void MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2) {
+float MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, float tnow) {
   // 1st Equation/Row
   float a = pow(t1,3);
   float b = pow(t1,2);
@@ -69,8 +44,13 @@ void MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2) {
   float r4 = a*f*k*t-a*f*o*s-a*g*j*t+a*g*n*s+a*j*o*r-a*k*n*r-b*e*k*t+b*e*o*s+b*g*i*t-b*g*m*s-b*i*o*r+b*k*m*r+c*e*j*t-c*e*n*s-c*f*i*t+c*f*m*s+c*i*n*r-c*j*m*r-e*j*o*q+e*k*n*q+f*i*o*q-f*k*m*q-g*i*n*q+g*j*m*q;
   float den = a*f*k*p-a*f*l*o-a*g*j*p+a*g*l*n+a*h*j*o-a*h*k*n-b*e*k*p+b*e*l*o+b*g*i*p-b*g*l*m-b*h*i*o+b*h*k*m+c*e*j*p-c*e*l*n-c*f*i*p+c*f*l*m+c*h*i*n-c*h*j*m-d*e*j*o+d*e*k*n+d*f*i*o-d*f*k*m-d*g*i*n+d*g*j*m;
 
-  c1 = r1/den;
-  c2 = r2/den;
-  c3 = r3/den;
-  c4 = r4/den;
+  float c1 = r1/den;
+  float c2 = r2/den;
+  float c3 = r3/den;
+  float c4 = r4/den;
+
+  float to = tnow-t1;
+  float v_out = 3*c1*pow(to,2) + 2*c2*to + c3;
+
+  return v_out;
 }
