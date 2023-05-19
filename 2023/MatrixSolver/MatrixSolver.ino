@@ -49,8 +49,7 @@ float MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, f
   float c3 = r3/den;
   float c4 = r4/den;
 
-  float to = tnow-t1;
-  float v_out = 3*c1*pow(to,2) + 2*c2*to + c3;
+  float v_out = 3*c1*pow(tnow,2) + 2*c2*tnow + c3;
 
   return v_out;
 }
