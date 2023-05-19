@@ -54,30 +54,30 @@ void loop() {
     float x2 = x2_s.toFloat();
     float v2 = v2_s.toFloat();
     float duration = duration_s.toFloat();
-
     splines(x1,v1,x2,v2,duration);
   }
 } 
 
 // Input 2 position and velocities of the joint and the duration of the move
 void splines(float x1, float v1, float x2, float v2, float duration) {
-  float t = micros()*pow(10,-6);
-  float tStart = t;
-  float tEnd = tStart + duration;
+  float tStart = micros()*pow(10,-6);
+  float t = 0;
+  float tEnd = duration;
+
+  //Serial.println(t);
   while (t < tEnd) { // While the current time is less than the end time
-    int dacOut = MatrixSolver(x1*GR, v1*GR, tStart, x2*GR, v2*GR, tEnd, t); // Calculate what the current velocity should be
-    t = micros()*pow(10,-6);
+    int dacOut = MatrixSolver(GR*x1, GR*v1, 0, GR*x2, GR*v2, tEnd, t); // Calculate what the current velocity should be
+    t = (micros()*pow(10,-6))-tStart;
 
     dacWrite(DAC, dacOut);
 
-    Serial.print(t-tStart);
+    Serial.print(t);
     Serial.print(" ");
     Serial.print(velocity);
     Serial.print(" ");
     Serial.print(dacOut);
     Serial.println();
   }
-
   dacWrite(DAC, 0);
 }
 
@@ -131,6 +131,5 @@ int MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, flo
   if (dacOut < 0 || dacOut > 255) {
     dacOut = max(min(255, dacOut), 0);
   }
-
   return dacOut;
 }
