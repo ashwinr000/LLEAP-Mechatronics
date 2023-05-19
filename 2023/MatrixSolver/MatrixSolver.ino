@@ -8,12 +8,51 @@ float velocity = 0;
 void setup() {
   // put your setup code here, tnow run once:
   Serial.begin(115200);
-  splines(0,0,45,0,0.3);
+  //splines(0,0,45,0,0.3);
 }
 
 void loop() {
   // put your main code here, tnow run repeatedly:
+  if (Serial.available() > 0) {
+    //splines(0,0,45,0,0.3);
+      /*String input = Serial.readString();
+      int index = input.indexOf(' ');
+      String x1_s = "";
+      String v1_s = "";
+      String x2_s = "";
+      String v2_s = "";
+      String duration_s = "";
 
+      if (index != -1){ 
+        x1_s = input.substring(0, index);
+        if (index != -1){    
+          input = input.substring(index+1);
+          index = input.indexOf(' ');
+          v1_s = input.substring(0, index);
+            if (index != -1){    
+              input = input.substring(index+1);
+              index = input.indexOf(' ');
+              x2_s = input.substring(0, index);
+                if (index != -1){    
+                  input = input.substring(index+1);
+                  index = input.indexOf(' ');
+                  v2_s = input.substring(0, index);
+                    if (index != -1){    
+                      input = input.substring(index+1);
+                      index = input.indexOf(' ');
+                      duration_s = input.substring(0, index);
+                    }
+                }
+            }
+        }
+      }
+    float x1 = x1_s.toFloat();
+    float v1 = v1_s.toFloat();
+    float x2 = x2_s.toFloat();
+    float v2 = v2_s.toFloat();
+    float duration = duration_s.toFloat();
+    splines(x1,v1,x2,v2,duration);*/
+  }
 } 
 
 // Input 2 position and velocities of the joint and the duration of the move
@@ -27,7 +66,7 @@ void splines(float x1, float v1, float x2, float v2, float duration) {
 
     dacWrite(DAC, dacOut);
 
-    Serial.print(t);
+    Serial.print(t-tStart);
     Serial.print(" ");
     Serial.print(velocity);
     Serial.print(" ");
