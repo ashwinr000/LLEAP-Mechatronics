@@ -8,7 +8,6 @@ float velocity = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  //splines(0,0,45,0,0.3);
 }
 
 void loop() {
@@ -60,13 +59,10 @@ void loop() {
 
 // Input 2 position and velocities of the joint and the duration of the move
 void splines(float x1, float v1, float x2, float v2, float duration) {
-  float tStart = micros()*pow(10,-6);
   float t = 0;
-  float tEnd = duration;
-
-  //Serial.println(t);
-  while (t < tEnd) { // While the current time is less than the end time
-    int dacOut = MatrixSolver(GR*x1, GR*v1, 0, GR*x2, GR*v2, tEnd, t); // Calculate what the current velocity should be
+  float tStart = micros()*pow(10,-6);
+  while (t < duration) { // While the current time is less than the end time
+    int dacOut = MatrixSolver(GR*x1, GR*v1, 0, GR*x2, GR*v2, duration, t); // Calculate what the current velocity should be
     t = (micros()*pow(10,-6))-tStart;
 
     dacWrite(DAC, dacOut);
