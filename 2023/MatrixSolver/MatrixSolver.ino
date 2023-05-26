@@ -4,10 +4,15 @@
 #define GR 300
 
 float velocity = 0;
+float pos = 0;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  Serial.print(" ");
+  splines(0.5, 0, 17.76, 28.64, 0.75);
+  splines(17.76, 28.64, 45.8, 0, 1.36);
+
 }
 
 void loop() {
@@ -72,6 +77,8 @@ void splines(float x1, float v1, float x2, float v2, float duration) {
     Serial.print(velocity);
     Serial.print(" ");
     Serial.print(dacOut);
+    Serial.print(" ");
+    Serial.print(pos);
     Serial.println();
   }
   dacWrite(DAC, 0);
@@ -118,10 +125,12 @@ int MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, flo
   float c4 = r4/den;
 
   float vel = 3*c1*pow(tnow,2) + 2*c2*tnow + c3; // Current Velocity in degs/s
-  velocity = vel/60; // Convert from degs/s to RPM
+  velocity = vel/6; // Convert from degs/s to RPM
 
   float volts = 0.1 + (velocity - 0.0)*((5.0 - 0.1)/(5000.0-0.0)); // Convert from RPM to a Voltage Value
   int dacOut = 0 + (volts - 0.1)*((255 - 0)/(3.162-0.1)); // Covert from Voltage to DAC Output Value
+
+  pos = (c1*pow(tnow,3) + c2*pow(tnow,2) + c3*tnow + c4)/GR; // Joint Position
 
   // Check if the DAC Output is Outside of its Acceptable Range
   if (dacOut < 0 || dacOut > 255) {
