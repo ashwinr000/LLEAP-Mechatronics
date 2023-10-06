@@ -28,7 +28,7 @@ void tickCounter() {
   tickCount++;
   prevTime = time; // record new time as old time
   time = micros(); //update new time
-  if (tickCount >= 100*TPR) { // stop motor after ~ 10 revolutions
+  if (tickCount >= 100*TPR) { // stop motor after ~ 100 revolutions
     analogWrite(PWM, 0);
   }
   Serial.println((60000000 / (time - prevTime)) / 11); // calculate RPM using difference between old and new time and 11 ticks per revolution
