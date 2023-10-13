@@ -1,38 +1,39 @@
-#define ChA 34
-#define DAC 25
-#define TPR 11
-#define GR 300
+#define hallSensor 34 //Hall Effect Sensor Pin
+#define DAC 25 //Speed Controller Pin
+#define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
+#define gearRatio 300 //Gear Ratio
 
 float velocity = 0;
 float pos = 0;
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
+  // code runs once:
+  Serial.begin(115200); //Start Serial Communication Rate at This Value
   Serial.print(" ");
-  splines(0.5, 0, 17.76, 28.64, 0.75);
+  splines(0.5, 0, 17.76, 28.64, 0.75); //Call Spline Function With Values Given By Simulation Team
   splines(17.76, 28.64, 45.8, 0, 1.36);
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  if (Serial.available() > 0) {
+  // main code to run repeatedly:
+  if (Serial.available() > 0) { //Check if Serial Messages Were Recieved
     String input = Serial.readString();
     int index = input.indexOf(' ');
+    //Create Strings to Later Print to Serial
     String x1_s = "";
     String v1_s = "";
     String x2_s = "";
     String v2_s = "";
     String duration_s = "";
 
-    if (index != -1){ 
-      x1_s = input.substring(0, index);
+    if (index != -1){ //Check if There is a Space Character
+      x1_s = input.substring(0, index); //Create a String by Copying From 0 to Position of First Space
       
-      if (index != -1){    
-        input = input.substring(index+1);
+      if (index != -1){
+        input = input.substring(index+1); //Redefine Input Beginning After Indexed Space to End of Previous Input
         index = input.indexOf(' ');
-        v1_s = input.substring(0, index);
+        v1_s = input.substring(0, index); //Repeat for All Variables
         
         if (index != -1){    
           input = input.substring(index+1);
@@ -53,12 +54,13 @@ void loop() {
         }
       }
     }
+    //Convert All Strings to Floats
     float x1 = x1_s.toFloat();
     float v1 = v1_s.toFloat();
     float x2 = x2_s.toFloat();
     float v2 = v2_s.toFloat();
     float duration = duration_s.toFloat();
-    splines(x1,v1,x2,v2,duration);
+    splines(x1,v1,x2,v2,duration); //Run Splines Function Using Read Values
   }
 } 
 
@@ -67,7 +69,7 @@ void splines(float x1, float v1, float x2, float v2, float duration) {
   float t = 0;
   float tStart = micros()*pow(10,-6);
   while (t < duration) { // While the current time is less than the end time
-    int dacOut = MatrixSolver(GR*x1, GR*v1, 0, GR*x2, GR*v2, duration, t); // Calculate what the current velocity should be
+    int dacOut = MatrixSolver(gearRatio*x1, gearRatio*v1, 0, gearRatio*x2, gearRatio*v2, duration, t); // Calculate what the current velocity should be
     t = (micros()*pow(10,-6))-tStart;
 
     dacWrite(DAC, dacOut);
@@ -130,7 +132,7 @@ int MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, flo
   float volts = 0.1 + (velocity - 0.0)*((5.0 - 0.1)/(5000.0-0.0)); // Convert from RPM to a Voltage Value
   int dacOut = 0 + (volts - 0.1)*((255 - 0)/(3.162-0.1)); // Covert from Voltage to DAC Output Value
 
-  pos = (c1*pow(tnow,3) + c2*pow(tnow,2) + c3*tnow + c4)/GR; // Joint Position
+  pos = (c1*pow(tnow,3) + c2*pow(tnow,2) + c3*tnow + c4)/gearRatio; // Joint Position
 
   // Check if the DAC Output is Outside of its Acceptable Range
   if (dacOut < 0 || dacOut > 255) {
