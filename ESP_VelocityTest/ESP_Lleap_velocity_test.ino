@@ -1,6 +1,6 @@
-#define ChA 34
-#define DAC 25
-#define TPR 11
+#define ChA 34 //Hall Effect Sensor Pin
+#define DAC 25 //Speed Controller Pin
+#define TPR 11 //Hall-Effect Ticks per Revolution of Motor
 
 #define maxSpd 255 //analogWrite value corresponding to 5V which is ~2500 RPM
 
