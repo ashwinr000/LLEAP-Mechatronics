@@ -19,7 +19,9 @@ void setup() {
   pinMode(direction, OUTPUT); //Push a Direction Signal Output to Motor Controller
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
-  attachInterrupt(digitalPinToInterrupt(hallSensor), tickCounter, RISING); //Run tickCounter Fucntion Everytime the Hall Effect Sensor Triggers a High Input
+  
+  //Run tickCounter Function Everytime the Hall Effect Sensor Triggers a High Input
+  attachInterrupt(digitalPinToInterrupt(hallSensor), tickCounter, RISING);
 }
 
 void loop() {
@@ -65,5 +67,7 @@ void loop() {
 void tickCounter() {
   prevTime = currentTime; // record new time as old time
   currentTime = micros(); //update new time
-  Serial.println((60000000 / (currentTime - prevTime)) / tickPerRev); // calculate RPM using difference between old and new time and ticks per revolution
+
+  // calculate RPM using difference between old and new time and ticks per revolution
+  Serial.println((60000000 / (currentTime - prevTime)) / tickPerRev);
 }
