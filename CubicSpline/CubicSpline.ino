@@ -10,7 +10,8 @@ void setup() {
   // code runs once:
   Serial.begin(115200); //Start Serial Communication Rate at This Value
   Serial.print(" ");
-  splines(0.5, 0, 17.76, 28.64, 0.75); //Call Spline Function With Values Given By Simulation Team
+  //Call Spline Function With Values Given By Simulation Team
+  splines(0.5, 0, 17.76, 28.64, 0.75); 
   splines(17.76, 28.64, 45.8, 0, 1.36);
 
 }
