@@ -4,7 +4,7 @@
 #define enable 12 //Motor Enable Pin
 #define direction 14 //Motor Direction Pin
 
-#define maxSpd 255 //analogWrite value corresponding to 3.3V Output to Motor Controller which is a Motor Speed of ~ RPM
+#define maxSpd 255 //dacWrite value corresponding to 3.3V Output to Motor Controller which is a Motor Speed of ~ RPM
 
 unsigned long currentTime = 0;
 unsigned long prevTime = 0;
@@ -28,40 +28,40 @@ void loop() {
   //put your main code here, to run repeatedly:
   
   delay(5000);
-  analogWrite(DAC, 0);  //Run at 0 RPM
+  dacWrite(DAC, 0);  //Run at 0 RPM
   Serial.println(0);
   delay(5000);
-  analogWrite(DAC, (maxSpd * 4) / 100); //Run at 4% Max Speed
-  Serial.println(10);
+  dacWrite(DAC, (maxSpd * 4) / 100); //Run at 4% Max Speed
+  Serial.println(4);
   delay(5000);
-  analogWrite(DAC, (maxSpd * 8) / 100); //Run at 8% Max Speed
+  dacWrite(DAC, (maxSpd * 8) / 100); //Run at 8% Max Speed
+  Serial.println(8);
+  delay(5000);
+  dacWrite(DAC, (maxSpd * 12) / 100); //Run at 12% Max Speed
+  Serial.println(12);
+  delay(5000);
+  dacWrite(DAC, (maxSpd * 16) / 100); //Run at 16% Max Speed
+  Serial.println(16);
+  delay(5000);
+  dacWrite(DAC, (maxSpd * 20) / 100); //Run at 20% Max Speed
   Serial.println(20);
   delay(5000);
-  analogWrite(DAC, (maxSpd * 12) / 100); //Run at 12% Max Speed
-  Serial.println(30);
+  dacWrite(DAC, (maxSpd * 24) / 100); //Run at 24% Max Speed
+  Serial.println(24);
   delay(5000);
-  analogWrite(DAC, (maxSpd * 16) / 100); //Run at 16% Max Speed
+  dacWrite(DAC, (maxSpd * 28) / 100); //Run at 28% Max Speed
+  Serial.println(28);
+  delay(5000);
+  dacWrite(DAC, (maxSpd * 32) / 100); //Run at 32% Max Speed
+  Serial.println(32);
+  delay(5000);
+  dacWrite(DAC, (maxSpd * 36) / 100); //Run at 36% Max Speed
+  Serial.println(36);
+  delay(5000);
+  dacWrite(DAC, (maxSpd * 40) / 100); //Run at 40% Max Speed
   Serial.println(40);
   delay(5000);
-  analogWrite(DAC, (maxSpd * 20) / 100); //Run at 20% Max Speed
-  Serial.println(50);
-  delay(5000);
-  analogWrite(DAC, (maxSpd * 24) / 100); //Run at 24% Max Speed
-  Serial.println(60);
-  delay(5000);
-  analogWrite(DAC, (maxSpd * 28) / 100); //Run at 28% Max Speed
-  Serial.println(70);
-  delay(5000);
-  analogWrite(DAC, (maxSpd * 32) / 100); //Run at 32% Max Speed
-  Serial.println(80);
-  delay(5000);
-  analogWrite(DAC, (maxSpd * 36) / 100); //Run at 36% Max Speed
-  Serial.println(90);
-  delay(5000);
-  analogWrite(DAC, (maxSpd * 40) / 100); //Run at 40% Max Speed
-  Serial.println(100);
-  delay(5000);
-  analogWrite(DAC, 0);
+  dacWrite(DAC, 0);
 }
 
 void tickCounter() {
