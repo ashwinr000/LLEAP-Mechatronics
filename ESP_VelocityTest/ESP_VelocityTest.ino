@@ -1,8 +1,8 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
 #define DAC 25 //Motor Speed Controller Pin
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define enable 12 //Motor Enable Pin
-#define direction 14 //Motor Direction Pin
+#define enable 33 //Motor Enable Pin
+#define direction 32 //Motor Direction Pin
 
 #define maxSpd 255 //dacWrite value corresponding to 3.3V Output to Motor Controller which is a Motor Speed of ~ RPM
 
