@@ -1,11 +1,11 @@
-#define ENA 35
+#define ENA 33
 #define DAC 25
 #define ChA 34
 
 #define DPR 360.0 // Degrees rotated by joint per revolution of motor: 360 / (Revolutions of Motor / 1 Revolution of Joint)
 #define TPR 11.0 // Hall Effect Sensor Ticks per Revolution of motor
 
-#define maxVel 9900 //Maximum Velocity of Motor (degrees/second)
+#define maxVel 4800 //Maximum Velocity of Motor (degrees/second)
 
 #define ERROR_MARGIN 0
 #define Kp 1

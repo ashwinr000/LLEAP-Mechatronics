@@ -1,7 +1,9 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
 #define DAC 25 //Speed Controller Pin
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define gearRatio 300 //Gear Ratio
+#define gearRatio 1 //Gear Ratio
+#define enable 33 //Motor Enable Pin
+#define direction 32 //Motor Direction Pin
 
 float velocity = 0;
 float pos = 0;
@@ -10,10 +12,17 @@ void setup() {
   // code runs once:
   Serial.begin(115200); //Start Serial Communication Rate at This Value
   Serial.print(" ");
-  //Call Spline Function With Values Given By Simulation Team
-  splines(0.5, 0, 17.76, 28.64, 0.75); 
-  splines(17.76, 28.64, 45.8, 0, 1.36);
 
+  pinMode(hallSensor, INPUT); //Take Input from the Hall Sensor
+  pinMode(DAC, OUTPUT); //Push a DAC Output to Motor Speed Controller
+  pinMode(enable, OUTPUT); //Push an Enable Signal Output to Motor Controller
+  pinMode(direction, OUTPUT); //Push a Direction Signal Output to Motor Controller
+  digitalWrite(enable, HIGH);
+  digitalWrite(direction, HIGH);
+
+  //Call Spline Function With Values Given By Simulation Team
+ /* splines(0.5, 0, 17.76, 28.64, 0.75); 
+  splines(17.76, 28.64, 45.8, 0, 1.36);*/
 }
 
 void loop() {
@@ -142,8 +151,8 @@ int MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, flo
   float vel = 3*c1*pow(tnow,2) + 2*c2*tnow + c3; // Current Velocity in degs/s
   velocity = vel/6; // Convert from degs/s to RPM
 
-  float volts = 0.1 + (velocity - 0.0)*((5.0 - 0.1)/(5000.0-0.0)); // Convert from RPM to a Voltage Value
-  int dacOut = 0 + (volts - 0.1)*((255 - 0)/(3.162-0.1)); // Covert from Voltage to DAC Output Value
+  float volts = 0.1 + (velocity - 0.0)*((3.185 - 0.1)/(800.0-85.0)); // Convert from RPM to a Voltage Value
+  int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(3.185-0.0)); // Covert from Voltage to DAC Output Value
 
   pos = (c1*pow(tnow,3) + c2*pow(tnow,2) + c3*tnow + c4)/gearRatio; // Joint Position
 
