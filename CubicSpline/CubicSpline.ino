@@ -1,7 +1,7 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
 #define DAC 25 //Speed Controller Pin
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define gearRatio 1 //Gear Ratio
+#define gearRatio 1 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define enable 33 //Motor Enable Pin
 #define direction 32 //Motor Direction Pin
 
