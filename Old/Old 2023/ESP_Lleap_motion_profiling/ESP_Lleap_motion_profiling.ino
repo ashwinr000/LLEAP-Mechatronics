@@ -23,13 +23,16 @@ unsigned long PIDOffset = 0;
 unsigned long PIDTime = 0;
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
- 
-  pinMode(ENA, OUTPUT);
-  pinMode(DAC, OUTPUT);
-  pinMode (ChA, INPUT);
-  attachInterrupt(digitalPinToInterrupt(ChA), tickCounter, RISING); //run tickCounter everytime the Hall Effect sensor triggers high
+  // code runs once:
+  Serial.begin(115200); //Start Serial Communication Rate at This Value
+  Serial.print(" ");
+
+  pinMode(hallSensor, INPUT); //Take Input from the Hall Sensor
+  pinMode(DAC, OUTPUT); //Push a DAC Output to Motor Speed Controller
+  pinMode(enable, OUTPUT); //Push an Enable Signal Output to Motor Controller
+  pinMode(direction, OUTPUT); //Push a Direction Signal Output to Motor Controller
+  digitalWrite(enable, HIGH);
+  digitalWrite(direction, HIGH);
   currentTime = micros();
   prevTime = micros();
 

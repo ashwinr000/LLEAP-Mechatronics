@@ -1,7 +1,7 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
 #define DAC 25 //Speed Controller Pin
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define gearRatio 1 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
+#define gearRatio 120.4 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define enable 33 //Motor Enable Pin
 #define direction 32 //Motor Direction Pin
 
@@ -20,9 +20,11 @@ void setup() {
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
 
-  //Call Spline Function With Values Given By Simulation Team
- /* splines(0.5, 0, 17.76, 28.64, 0.75); 
-  splines(17.76, 28.64, 45.8, 0, 1.36);*/
+  //Call Spline Function
+  splines(0, 0, 45, 0, 2);
+  delay(500);
+  digitalWrite(direction, LOW);
+  splines(0, 0, 45, 0, 2);
 }
 
 void loop() {
