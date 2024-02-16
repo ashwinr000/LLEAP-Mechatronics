@@ -3,7 +3,7 @@
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
 #define gearRatio 28 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define enable 33 //Motor Enable Pin
-#define direction 32 //Motor Direction Pin
+#define direction 32 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
 
 float velocity = 0;
 float pos = 0;
@@ -82,7 +82,7 @@ void splines(float x1, float v1, float x2, float v2, float duration) {
   }
   while (t < duration) { // While the current time is less than the end time
     // Calculate what the current velocity should be
-    int dacOut = MatrixSolver(gearRatio*abs(x1), gearRatio*abs(v1), 0, gearRatio*abs(x2), gearRatio*abs(v2), duration, t);
+    int dacOut = MatrixSolver(gearRatio*x1, gearRatio*v1, 0, gearRatio*x2, gearRatio*v2, duration, t);
     t = (micros()*pow(10,-6))-tStart;
 
     dacWrite(DAC, dacOut);
@@ -153,7 +153,7 @@ int MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, flo
   float vel = 3*c1*pow(tnow,2) + 2*c2*tnow + c3; // Current Velocity in degs/s
   velocity = vel/6; // Convert from degs/s to RPM
 
-  float volts = 0.1 + (velocity - 0.0)*((3.185 - 0.1)/(800.0-85.0)); // Convert from RPM to a Voltage Value
+  float volts = 0.1 + (abs(velocity) - 0.0)*((3.185 - 0.1)/(800.0-85.0)); // Convert from RPM to a Voltage Value
   int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(3.185-0.0)); // Covert from Voltage to DAC Output Value
 
   pos = (c1*pow(tnow,3) + c2*pow(tnow,2) + c3*tnow + c4)/gearRatio; // Joint Position
