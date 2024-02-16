@@ -1,7 +1,7 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
 #define DAC 25 //Speed Controller Pin
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define gearRatio 120.4 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
+#define gearRatio 28 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define enable 33 //Motor Enable Pin
 #define direction 32 //Motor Direction Pin
 
@@ -19,12 +19,6 @@ void setup() {
   pinMode(direction, OUTPUT); //Push a Direction Signal Output to Motor Controller
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
-
-  //Call Spline Function
-  splines(0, 0, 45, 0, 2);
-  delay(500);
-  digitalWrite(direction, LOW);
-  splines(0, 0, 45, 0, 2);
 }
 
 void loop() {
@@ -80,9 +74,15 @@ void loop() {
 void splines(float x1, float v1, float x2, float v2, float duration) {
   float t = 0;
   float tStart = micros()*pow(10,-6);
+  if (x2 < x1){ // Switch to negative direction when x2 is less than x1
+    digitalWrite(direction, LOW);
+  }
+  if (x2 > x1){ // Switch to positive direction when x2 is greater than x1
+    digitalWrite(direction, HIGH);
+  }
   while (t < duration) { // While the current time is less than the end time
     // Calculate what the current velocity should be
-    int dacOut = MatrixSolver(gearRatio*x1, gearRatio*v1, 0, gearRatio*x2, gearRatio*v2, duration, t);
+    int dacOut = abs(MatrixSolver(gearRatio*x1, gearRatio*v1, 0, gearRatio*x2, gearRatio*v2, duration, t));
     t = (micros()*pow(10,-6))-tStart;
 
     dacWrite(DAC, dacOut);
