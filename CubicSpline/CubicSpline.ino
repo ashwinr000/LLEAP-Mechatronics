@@ -82,7 +82,7 @@ void splines(float x1, float v1, float x2, float v2, float duration) {
   }
   while (t < duration) { // While the current time is less than the end time
     // Calculate what the current velocity should be
-    int dacOut = abs(MatrixSolver(gearRatio*x1, gearRatio*v1, 0, gearRatio*x2, gearRatio*v2, duration, t));
+    int dacOut = MatrixSolver(gearRatio*abs(x1), gearRatio*abs(v1), 0, gearRatio*abs(x2), gearRatio*abs(v2), duration, t);
     t = (micros()*pow(10,-6))-tStart;
 
     dacWrite(DAC, dacOut);
