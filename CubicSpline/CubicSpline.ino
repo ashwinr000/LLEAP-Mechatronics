@@ -19,6 +19,11 @@ void setup() {
   pinMode(direction, OUTPUT); //Push a Direction Signal Output to Motor Controller
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
+
+  float points[][5] = {
+    {0, 0, 45, 0, 2},
+    {45, 0, 0, 0, 2}
+  }
 }
 
 void loop() {
@@ -70,6 +75,13 @@ void loop() {
   }
 } 
 
+// Input an array of 
+void path(float points[][5]) {
+  for (byte i = 0; i < (sizeof(points)/sizeof(points[0])); i++) {
+    splines(points[i][0],points[i][1],points[i][2],points[i][3],points[i][4]);
+  }
+}
+
 // Input 2 position and velocities of the joint and the duration of the move
 void splines(float x1, float v1, float x2, float v2, float duration) {
   float t = 0;
@@ -82,7 +94,7 @@ void splines(float x1, float v1, float x2, float v2, float duration) {
   }
   while (t < duration) { // While the current time is less than the end time
     // Calculate what the current velocity should be
-    int dacOut = MatrixSolver(gearRatio*x1, gearRatio*v1, 0, gearRatio*x2, gearRatio*v2, duration, t);
+    int dacOut = matrixSolver(gearRatio*x1, gearRatio*v1, 0, gearRatio*x2, gearRatio*v2, duration, t);
     t = (micros()*pow(10,-6))-tStart;
 
     dacWrite(DAC, dacOut);
@@ -101,7 +113,7 @@ void splines(float x1, float v1, float x2, float v2, float duration) {
 
 /* Solve 4x4 Matrix with Cramer's Rule to 
   Determine the Polynomial Constants Required to Generate a Cubic Position Function*/
-int MatrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, float tnow) {
+int matrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, float tnow) {
   // 1st Equation/Row
   float a = pow(t1,3);
   float b = pow(t1,2);
