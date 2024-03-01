@@ -1,7 +1,8 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
 #define DAC 25 //Speed Controller Pin
+//#define pot  // Potentiometer Pin
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define gearRatio 28 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
+#define gearRatio 150 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define enable 33 //Motor Enable Pin
 #define direction 32 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
 
@@ -17,13 +18,15 @@ void setup() {
   pinMode(DAC, OUTPUT); //Push a DAC Output to Motor Speed Controller
   pinMode(enable, OUTPUT); //Push an Enable Signal Output to Motor Controller
   pinMode(direction, OUTPUT); //Push a Direction Signal Output to Motor Controller
+  //pinMode(pot, INPUT); // Pull Input Date from the Potentiometer
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
 
   float points[][5] = {
     {0, 0, 45, 0, 2},
     {45, 0, 0, 0, 2}
-  }
+  };
+  path(points,sizeof(points)/sizeof(points[0]));
 }
 
 void loop() {
@@ -76,8 +79,8 @@ void loop() {
 } 
 
 // Input an array of 
-void path(float points[][5]) {
-  for (byte i = 0; i < (sizeof(points)/sizeof(points[0])); i++) {
+void path(float points[][5], int pointNumber) {
+  for (int i = 0; i < pointNumber; i++) {
     splines(points[i][0],points[i][1],points[i][2],points[i][3],points[i][4]);
   }
 }
