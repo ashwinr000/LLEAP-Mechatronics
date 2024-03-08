@@ -21,11 +21,11 @@ void setup() {
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
   
-  float points[][5] = {{0,0,45,0,5},
+  /*float points[][5] = {{0,0,45,0,5},
                        {45,0,0,0,5}};
   int pointNumber = sizeof(points)/sizeof(points[0]);
 
-  motionProfile(points, pointNumber);
+  motionProfile(points, pointNumber);*/
 }
 
 void loop() {
