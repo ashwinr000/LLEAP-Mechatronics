@@ -1,10 +1,15 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
 #define DAC 25 //Speed Controller Pin
 //#define pot  // Potentiometer Pin
-#define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define gearRatio 150 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define enable 33 //Motor Enable Pin
 #define direction 32 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
+
+#define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
+#define gearRatio 150 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
+#define maxVel 800.0 //Maximum Velocity of Motor (RPM)
+#define minVel 85.0 //Minimum Velocity of Motor (RPM)
+#define maxVolt 3.185 //Maximum Voltage from ESP32 
+#define minVolt 0.1 //Minimum Voltage accepted by Motor Driver
 
 float coeff[4]; //Create Global Coefficienct Matrix
 
@@ -114,8 +119,8 @@ void motionProfile(float points[][5], int pointNumber) {
       digitalWrite(direction, HIGH);
       }
 
-      float volts = 0.1 + (abs(velocity) - 0.0)*((3.185 - 0.1)/(800.0-85.0)); // Convert from RPM to a Voltage Value
-      int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(3.185-0.0)); // Covert from Voltage to DAC Output Value
+      float volts = minVolt + (abs(velocity) - 0.0)*((maxVolt - minVolt)/(maxVel-minVel)); // Convert RPM to a Voltage
+      int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(maxVolt-0.0)); // Covert Voltage to DAC Output
 
       float position = (c1*pow(t,3) + c2*pow(t,2) + c3*t + c4)/gearRatio; // Joint Position
 
