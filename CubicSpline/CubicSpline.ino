@@ -6,8 +6,7 @@
 #define enable 33 //Motor Enable Pin
 #define direction 32 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
 
-float velocity = 0;
-float pos = 0;
+float coeff[4]; //Create Global Coefficienct Matrix
 
 void setup() {
   // code runs once:
@@ -21,12 +20,12 @@ void setup() {
   //pinMode(pot, INPUT); // Pull Input Date from the Potentiometer
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
+  
+  float points[][5] = {{0,0,45,0,5},
+                       {45,0,0,0,5}};
+  int pointNumber = sizeof(points)/sizeof(points[0]);
 
-  float points[][5] = {
-    {0, 0, 45, 0, 2},
-    {45, 0, 0, 0, 2}
-  };
-  path(points,sizeof(points)/sizeof(points[0]));
+  motionProfile(points, pointNumber);
 }
 
 void loop() {
@@ -74,49 +73,76 @@ void loop() {
     float x2 = x2_s.toFloat();
     float v2 = v2_s.toFloat();
     float duration = duration_s.toFloat();
-    splines(x1,v1,x2,v2,duration); //Run Splines Function Using Read Values
+    float points[][5] = {x1,v1,x2,v2,duration};
+
+    motionProfile(points, 1);
   }
 } 
 
 // Input an array of 
-void path(float points[][5], int pointNumber) {
+void motionProfile(float points[][5], int pointNumber) {
+  float c[pointNumber][4];
   for (int i = 0; i < pointNumber; i++) {
-    splines(points[i][0],points[i][1],points[i][2],points[i][3],points[i][4]);
-  }
-}
+    // Initial State, Final State
+    matrixSolver(gearRatio*points[i][0],gearRatio*points[i][1],0,\
+    gearRatio*points[i][2],gearRatio*points[i][3],points[i][4]);
 
-// Input 2 position and velocities of the joint and the duration of the move
-void splines(float x1, float v1, float x2, float v2, float duration) {
-  float t = 0;
-  float tStart = micros()*pow(10,-6);
-  if (x2 < x1){ // Switch to negative direction when x2 is less than x1
-    digitalWrite(direction, LOW);
+    c[i][0] = coeff[0];
+    c[i][1] = coeff[1];
+    c[i][2] = coeff[2];
+    c[i][3] = coeff[3];
   }
-  if (x2 > x1){ // Switch to positive direction when x2 is greater than x1
-    digitalWrite(direction, HIGH);
-  }
-  while (t < duration) { // While the current time is less than the end time
-    // Calculate what the current velocity should be
-    int dacOut = matrixSolver(gearRatio*x1, gearRatio*v1, 0, gearRatio*x2, gearRatio*v2, duration, t);
-    t = (micros()*pow(10,-6))-tStart;
 
-    dacWrite(DAC, dacOut);
+  for (int i = 0; i < pointNumber; i++) {
+    float t = 0;
+    
+    float c1 = c[i][0];
+    float c2 = c[i][1];
+    float c3 = c[i][2];
+    float c4 = c[i][3];
 
-    Serial.print(t);
-    Serial.print(" ");
-    Serial.print(velocity);
-    Serial.print(" ");
-    Serial.print(dacOut);
-    Serial.print(" ");
-    Serial.print(pos);
-    Serial.println();
+    float tStart = micros()*pow(10,-6);
+    while (t < points[i][4]) { // While the current time is less than the end time
+      // Calculate what the current velocity should be
+      float vel = 3*c1*pow(t,2) + 2*c2*t + c3; // Current Velocity in degs/s
+      float velocity = vel/6; // Convert from degs/s to RPM
+
+      if (velocity < 0){ // Switch to negative direction when x2 is less than x1
+      digitalWrite(direction, LOW);
+      }
+      if (velocity > 0){ // Switch to positive direction when x2 is greater than x1
+      digitalWrite(direction, HIGH);
+      }
+
+      float volts = 0.1 + (abs(velocity) - 0.0)*((3.185 - 0.1)/(800.0-85.0)); // Convert from RPM to a Voltage Value
+      int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(3.185-0.0)); // Covert from Voltage to DAC Output Value
+
+      float position = (c1*pow(t,3) + c2*pow(t,2) + c3*t + c4)/gearRatio; // Joint Position
+
+      // Check if the DAC Output is Outside of its Acceptable Range
+      if (dacOut < 0 || dacOut > 255) {
+        dacOut = max(min(255, dacOut), 0);
+      }
+
+      dacWrite(DAC, dacOut);
+
+      Serial.print(t);
+      Serial.print(" ");
+      Serial.print(velocity);
+      Serial.print(" ");
+      Serial.print(dacOut);
+      Serial.print(" ");
+      Serial.print(position);
+      Serial.println();
+      t = (micros()*pow(10,-6))-tStart;
+    }
+    dacWrite(DAC, 0);
   }
-  dacWrite(DAC, 0);
 }
 
 /* Solve 4x4 Matrix with Cramer's Rule to 
   Determine the Polynomial Constants Required to Generate a Cubic Position Function*/
-int matrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, float tnow) {
+void matrixSolver(float x1, float v1, float t1, float x2, float v2, float t2) {
   // 1st Equation/Row
   float a = pow(t1,3);
   float b = pow(t1,2);
@@ -165,17 +191,8 @@ int matrixSolver(float x1, float v1, float t1, float x2, float v2, float t2, flo
   float c3 = r3/den;
   float c4 = r4/den;
 
-  float vel = 3*c1*pow(tnow,2) + 2*c2*tnow + c3; // Current Velocity in degs/s
-  velocity = vel/6; // Convert from degs/s to RPM
-
-  float volts = 0.1 + (abs(velocity) - 0.0)*((3.185 - 0.1)/(800.0-85.0)); // Convert from RPM to a Voltage Value
-  int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(3.185-0.0)); // Covert from Voltage to DAC Output Value
-
-  pos = (c1*pow(tnow,3) + c2*pow(tnow,2) + c3*tnow + c4)/gearRatio; // Joint Position
-
-  // Check if the DAC Output is Outside of its Acceptable Range
-  if (dacOut < 0 || dacOut > 255) {
-    dacOut = max(min(255, dacOut), 0);
-  }
-  return dacOut;
+  coeff[0] = c1;
+  coeff[1] = c2;
+  coeff[2] = c3;
+  coeff[3] = c4;
 }
