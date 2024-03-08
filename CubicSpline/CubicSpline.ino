@@ -1,6 +1,6 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
 #define DAC 25 //Speed Controller Pin
-//#define pot  // Potentiometer Pin
+#define pot 35 // Potentiometer Pin
 #define enable 33 //Motor Enable Pin
 #define direction 32 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
 
@@ -22,7 +22,7 @@ void setup() {
   pinMode(DAC, OUTPUT); //Push a DAC Output to Motor Speed Controller
   pinMode(enable, OUTPUT); //Push an Enable Signal Output to Motor Controller
   pinMode(direction, OUTPUT); //Push a Direction Signal Output to Motor Controller
-  //pinMode(pot, INPUT); // Pull Input Date from the Potentiometer
+  pinMode(pot, INPUT); // Pull Input Date from the Potentiometer
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
   
