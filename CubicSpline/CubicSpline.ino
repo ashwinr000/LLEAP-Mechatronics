@@ -7,7 +7,7 @@
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
 #define gearRatio 150 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define maxVel 800.0 //Maximum Velocity of Motor (RPM)
-#define minVel 85.0 //Minimum Velocity of Motor (RPM)
+#define minVel 0.0 //Minimum Velocity of Motor (RPM)
 #define maxVolt 3.185 //Maximum Voltage from ESP32 
 #define minVolt 0.1 //Minimum Voltage accepted by Motor Driver
 
@@ -26,11 +26,11 @@ void setup() {
   digitalWrite(enable, HIGH);
   digitalWrite(direction, HIGH);
   
-  /*float points[][5] = {{0,0,45,0,5},
+  float points[][5] = {{0,0,45,0,5},
                        {45,0,0,0,5}};
   int pointNumber = sizeof(points)/sizeof(points[0]);
 
-  motionProfile(points, pointNumber);*/
+  motionProfile(points, pointNumber);
 }
 
 void loop() {
@@ -84,20 +84,22 @@ void loop() {
   }
 } 
 
-// Input an array of 
+// Input an array of points to hit and the number of points in the array
 void motionProfile(float points[][5], int pointNumber) {
-  float c[pointNumber][4];
-  for (int i = 0; i < pointNumber; i++) {
-    // Initial State, Final State
+  float c[pointNumber][4]; // Initialize the c 2D-array
+  for (int i = 0; i < pointNumber; i++) { // Loop through all the points
+    // Solve the 4x4 Matrix to get polynomial coefficients
     matrixSolver(gearRatio*points[i][0],gearRatio*points[i][1],0,\
     gearRatio*points[i][2],gearRatio*points[i][3],points[i][4]);
 
+    // Set current c array row to current coefficients
     c[i][0] = coeff[0];
     c[i][1] = coeff[1];
     c[i][2] = coeff[2];
     c[i][3] = coeff[3];
   }
 
+  // Loop through all points again
   for (int i = 0; i < pointNumber; i++) {
     float t = 0;
     
@@ -106,12 +108,13 @@ void motionProfile(float points[][5], int pointNumber) {
     float c3 = c[i][2];
     float c4 = c[i][3];
 
-    float tStart = micros()*pow(10,-6);
+    float tStart = micros()*pow(10,-6); // Note the start time for relative time calculations
     while (t < points[i][4]) { // While the current time is less than the end time
       // Calculate what the current velocity should be
       float vel = 3*c1*pow(t,2) + 2*c2*t + c3; // Current Velocity in degs/s
       float velocity = vel/6; // Convert from degs/s to RPM
 
+      // Change Direction based on Velocity Sign
       if (velocity < 0){ // Switch to negative direction when x2 is less than x1
       digitalWrite(direction, LOW);
       }
@@ -119,14 +122,16 @@ void motionProfile(float points[][5], int pointNumber) {
       digitalWrite(direction, HIGH);
       }
 
-      float volts = minVolt + (abs(velocity) - 0.0)*((maxVolt - minVolt)/(maxVel-minVel)); // Convert RPM to a Voltage
-      int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(maxVolt-0.0)); // Covert Voltage to DAC Output
+      // Convert RPM to a Voltage
+      float volts = minVolt + (abs(velocity) - 0.0)*((maxVolt - minVolt)/(maxVel-minVel));
+      // Covert Voltage to DAC Output
+      int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(maxVolt-0.0));
 
-      float position = (c1*pow(t,3) + c2*pow(t,2) + c3*t + c4)/gearRatio; // Joint Position
+      float position = (c1*pow(t,3) + c2*pow(t,2) + c3*t + c4)/gearRatio; //  Caluclated Joint Position
 
       // Check if the DAC Output is Outside of its Acceptable Range
       if (dacOut < 0 || dacOut > 255) {
-        dacOut = max(min(255, dacOut), 0);
+        dacOut = max(min(255, dacOut), 0); // If out of the Acceptable Range
       }
 
       dacWrite(DAC, dacOut);
@@ -139,7 +144,7 @@ void motionProfile(float points[][5], int pointNumber) {
       Serial.print(" ");
       Serial.print(position);
       Serial.println();
-      t = (micros()*pow(10,-6))-tStart;
+      t = (micros()*pow(10,-6))-tStart; // Set new current relative time
     }
     dacWrite(DAC, 0);
   }
