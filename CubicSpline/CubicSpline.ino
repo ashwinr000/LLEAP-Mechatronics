@@ -5,7 +5,7 @@
 #define direction 32 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
 
 #define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define gearRatio 150 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
+#define gearRatio 20.5 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define maxVel 800.0 //Maximum Velocity of Motor (RPM)
 #define minVel 0.0 //Minimum Velocity of Motor (RPM)
 #define maxVolt 3.185 //Maximum Voltage from ESP32 
