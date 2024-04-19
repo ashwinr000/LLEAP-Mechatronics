@@ -23,13 +23,14 @@ void setup() {
   pinMode(enable, OUTPUT); //Push an Enable Signal Output to Motor Controller
   pinMode(direction, OUTPUT); //Push a Direction Signal Output to Motor Controller
   pinMode(pot, INPUT); // Pull Input Date from the Potentiometer
-  digitalWrite(enable, HIGH);
+  digitalWrite(enable, LOW);
   digitalWrite(direction, HIGH);
   
   float points[][5] = {{0,0,45,0,5},
                        {45,0,0,0,5}};
   int pointNumber = sizeof(points)/sizeof(points[0]);
 
+  digitalWrite(enable, HIGH);
   motionProfile(points, pointNumber);
 }
 
@@ -80,7 +81,9 @@ void loop() {
     float duration = duration_s.toFloat();
     float points[][5] = {x1,v1,x2,v2,duration};
 
+    digitalWrite(enable, HIGH);
     motionProfile(points, 1);
+    digitalWrite(enable, LOW);
   }
 } 
 
