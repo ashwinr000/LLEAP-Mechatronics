@@ -4,14 +4,15 @@
 #define enable 33 //Motor Enable Pin
 #define direction 32 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
 
-#define tickPerRev 11 //Hall-Effect Ticks per Revolution of Motor
-#define gearRatio 20.5 //Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
-#define maxVel 800.0 //Maximum Velocity of Motor (RPM)
-#define minVel 0.0 //Minimum Velocity of Motor (RPM)
-#define maxVolt 3.185 //Maximum Voltage from ESP32 
-#define minVolt 0.1 //Minimum Voltage accepted by Motor Driver
+#define tickPerRev 11 // Hall-Effect Ticks per Revolution of Motor
+#define gearRatio 20.5 // Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
+#define maxVel 1000.0 // Maximum Velocity of Motor (RPM)
+#define minVel 0.0 // Minimum Velocity of Motor (RPM)
+#define maxVolt 3.3 // Maximum Voltage from ESP32 
+#define minVolt 0.1 // Minimum Voltage accepted by Motor Driver
 
 float coeff[4]; //Create Global Coefficienct Matrix
+int sign; // Create Global sign variable
 
 void setup() {
   // code runs once:
@@ -104,7 +105,9 @@ void motionProfile(float points[][5], int pointNumber) {
 
   // Loop through all points again
   for (int i = 0; i < pointNumber; i++) {
-    float t = 0;
+    float t = 0; // Inititalize t
+    float positionOut = points[i][0]; // Initialize positionOut
+    float tOld = 0; // Initialize tOld
     
     float c1 = c[i][0];
     float c2 = c[i][1];
@@ -113,6 +116,7 @@ void motionProfile(float points[][5], int pointNumber) {
 
     float tStart = micros()*pow(10,-6); // Note the start time for relative time calculations
     while (t < points[i][4]) { // While the current time is less than the end time
+      t = (micros()*pow(10,-6))-tStart; // Set new current relative time
       // Calculate what the current velocity should be
       float vel = 3*c1*pow(t,2) + 2*c2*t + c3; // Current Velocity in degs/s
       float velocity = vel/6; // Convert from degs/s to RPM
@@ -120,16 +124,22 @@ void motionProfile(float points[][5], int pointNumber) {
       // Change Direction based on Velocity Sign
       if (velocity < 0){ // Switch to negative direction when x2 is less than x1
       digitalWrite(direction, LOW);
+      sign = -1;
       }
       if (velocity > 0){ // Switch to positive direction when x2 is greater than x1
       digitalWrite(direction, HIGH);
+      sign = 1;
       }
-
+      
       // Convert RPM to a Voltage
       float volts = minVolt + (abs(velocity) - 0.0)*((maxVolt - minVolt)/(maxVel-minVel));
       // Covert Voltage to DAC Output
-      int dacOut = 0.0 + (volts - 0.0)*((255 - 0)/(maxVolt-0.0));
+      int dacOut = round(0.0 + (volts - 0.0)*((255 - 0)/(maxVolt-0.0)));
+      
+      float voltsOut = 0.0 + (dacOut - 0.0)*((maxVolt-0.0)/(255-0)); // Map dacOut to "actual" Voltage
+      float velocityOut = 0.0 + (voltsOut - minVolt)*((maxVel-minVel)/(maxVolt-minVolt)); // Map "actual" Voltage to "actual" Velocity
 
+      positionOut = positionOut + sign*(velocityOut*6)*(t-tOld)/gearRatio; // Integrate "actual" velocity over time to get "actual" position
       float position = (c1*pow(t,3) + c2*pow(t,2) + c3*t + c4)/gearRatio; //  Caluclated Joint Position
 
       // Check if the DAC Output is Outside of its Acceptable Range
@@ -146,8 +156,10 @@ void motionProfile(float points[][5], int pointNumber) {
       Serial.print(dacOut);
       Serial.print(" ");
       Serial.print(position);
+      Serial.print(" ");
+      Serial.print(positionOut);
       Serial.println();
-      t = (micros()*pow(10,-6))-tStart; // Set new current relative time
+      tOld = t;
     }
     dacWrite(DAC, 0);
   }
