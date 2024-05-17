@@ -1,11 +1,12 @@
 #define hallSensor 34 //Hall Effect Sensor Pin
-#define DAC1 25 //Speed Controller Pin
-#define DAC2 26 //Speed Controller Pin 
-//#define pot 35 // Potentiometer Pin
-#define enable1 33 //Motor Enable Pin
-#define direction1 32 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
-#define enable2 23 //Motor Enable Pin
-#define direction2 22 //Motor Direction Pin (HIGH is Positive Direction, LOW is Negative Direction)
+#define DAC1 25 //Speed Controller Pin 1
+#define DAC2 26 //Speed Controller Pin 2
+#define enable1 33 //Motor Enable Pin 1
+#define direction1 32 //Motor Direction Pin 1 (HIGH is Positive Direction, LOW is Negative Direction)
+#define enable2 23 //Motor Enable Pin 2
+#define direction2 22 //Motor Direction Pin 2 (HIGH is Positive Direction, LOW is Negative Direction)
+#define pot1 34 // Potentiometer Pin 1
+#define pot2 35 // Potentiometer Pin 2
 
 #define tickPerRev 11 // Hall-Effect Ticks per Revolution of Motor
 #define gearRatio 20.5 // Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
@@ -26,7 +27,7 @@ void setup() {
   pinMode(DAC1, OUTPUT); //Push a DAC1 Output to Motor Speed Controller
   pinMode(enable1, OUTPUT); //Push an Enable Signal Output to Motor Controller
   pinMode(direction1, OUTPUT); //Push a Direction Signal Output to Motor Controller
-  pinMode(pot, INPUT); // Pull Input Date from the Potentiometer
+  pinMode(pot1, INPUT); // Pull Input Date from the Potentiometer
   digitalWrite(enable1, LOW);
   digitalWrite(direction1, HIGH);
   
@@ -137,26 +138,26 @@ void motionProfile(float points[][5], int pointNumber) {
       // Convert RPM to a Voltage
       float volts = minVolt + (abs(velocity) - 0.0)*((maxVolt - minVolt)/(maxVel-minVel));
       // Covert Voltage to DAC1 Output
-      int DAC1Out = round(0.0 + (volts - 0.0)*((255 - 0)/(maxVolt-0.0)));
+      int dacOut = round(0.0 + (volts - 0.0)*((255 - 0)/(maxVolt-0.0)));
       
-      float voltsOut = 0.0 + (DAC1Out - 0.0)*((maxVolt-0.0)/(255-0)); // Map DAC1Out to "actual" Voltage
+      float voltsOut = 0.0 + (dacOut - 0.0)*((maxVolt-0.0)/(255-0)); // Map dacOut to "actual" Voltage
       float velocityOut = 0.0 + (voltsOut - minVolt)*((maxVel-minVel)/(maxVolt-minVolt)); // Map "actual" Voltage to "actual" Velocity
 
       positionOut = positionOut + sign*(velocityOut*6)*(t-tOld)/gearRatio; // Integrate "actual" velocity over time to get "actual" position
       float position = (c1*pow(t,3) + c2*pow(t,2) + c3*t + c4)/gearRatio; //  Caluclated Joint Position
 
       // Check if the DAC1 Output is Outside of its Acceptable Range
-      if (DAC1Out < 0 || DAC1Out > 255) {
-        DAC1Out = max(min(255, DAC1Out), 0); // If out of the Acceptable Range
+      if (dacOut < 0 || dacOut > 255) {
+        dacOut = max(min(255, dacOut), 0); // If out of the Acceptable Range
       }
 
-      DAC1Write(DAC1, DAC1Out);
+      dacWrite(DAC1, dacOut);
 
       Serial.print(t);
       Serial.print(" ");
       Serial.print(velocity);
       Serial.print(" ");
-      Serial.print(DAC1Out);
+      Serial.print(dacOut);
       Serial.print(" ");
       Serial.print(position);
       Serial.print(" ");
@@ -164,7 +165,7 @@ void motionProfile(float points[][5], int pointNumber) {
       Serial.println();
       tOld = t;
     }
-    DAC1Write(DAC1, 0);
+    dacWrite(DAC1, 0);
   }
 }
 
