@@ -1,10 +1,14 @@
-#define hallSensor 34 //Hall Effect Sensor Pin
+#include <Wire.h>
+#include <Adafruit_ADS1X15.h>
+ 
+Adafruit_ADS1115 ads1115;	// Construct an ads1115 
+
 #define DAC1 25 //Speed Controller Pin 1
 #define DAC2 26 //Speed Controller Pin 2
 #define enable1 33 //Motor Enable Pin 1
 #define direction1 32 //Motor Direction Pin 1 (HIGH is Positive Direction, LOW is Negative Direction)
 #define enable2 23 //Motor Enable Pin 2
-#define direction2 22 //Motor Direction Pin 2 (HIGH is Positive Direction, LOW is Negative Direction)
+#define direction2 19 //Motor Direction Pin 2 (HIGH is Positive Direction, LOW is Negative Direction)
 #define pot1 34 // Potentiometer Pin 1
 #define pot2 35 // Potentiometer Pin 2
 
