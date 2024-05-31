@@ -1,7 +1,7 @@
-#include <Wire.h>
-#include <Adafruit_ADS1X15.h>
+//#include <Wire.h>
+//#include <Adafruit_ADS1X15.h>
  
-Adafruit_ADS1115 ads1115;	// Construct an ads1115 
+//Adafruit_ADS1115 ads1115;	// Construct an ads1115 
 
 #define DAC1 25 //Speed Controller Pin 1
 #define DAC2 26 //Speed Controller Pin 2
@@ -20,27 +20,24 @@ Adafruit_ADS1115 ads1115;	// Construct an ads1115
 #define minVolt 0.1 // Minimum Voltage accepted by Motor Driver
 
 float coeff[4]; //Create Global Coefficienct Matrix
-int sign; // Create Global sign variable
+int sign = 1; // Create Global sign variable and initialize to 1
 
 void setup() {
   // code runs once:
   Serial.begin(115200); //Start Serial Communication Rate at This Value
   Serial.print(" ");
 
-  pinMode(hallSensor, INPUT); //Take Input from the Hall Sensor
   pinMode(DAC1, OUTPUT); //Push a DAC1 Output to Motor Speed Controller
   pinMode(enable1, OUTPUT); //Push an Enable Signal Output to Motor Controller
   pinMode(direction1, OUTPUT); //Push a Direction Signal Output to Motor Controller
   pinMode(pot1, INPUT); // Pull Input Date from the Potentiometer
-  digitalWrite(enable1, LOW);
-  digitalWrite(direction1, HIGH);
+  digitalWrite(enable1, HIGH);
   
-  float points[][5] = {{0,0,45,0,5},
+  /*float points[][5] = {{0,0,45,0,5},
                        {45,0,0,0,5}};
   int pointNumber = sizeof(points)/sizeof(points[0]);
 
-  digitalWrite(enable1, HIGH);
-  motionProfile(points, pointNumber);
+  motionProfile(points, pointNumber);*/
 }
 
 void loop() {
@@ -90,9 +87,7 @@ void loop() {
     float duration = duration_s.toFloat();
     float points[][5] = {x1,v1,x2,v2,duration};
 
-    digitalWrite(enable1, HIGH);
     motionProfile(points, 1);
-    digitalWrite(enable1, LOW);
   }
 } 
 
