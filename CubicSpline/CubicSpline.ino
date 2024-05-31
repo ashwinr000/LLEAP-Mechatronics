@@ -9,10 +9,7 @@
 #define direction1 32 //Motor Direction Pin 1 (HIGH is Positive Direction, LOW is Negative Direction)
 #define enable2 23 //Motor Enable Pin 2
 #define direction2 19 //Motor Direction Pin 2 (HIGH is Positive Direction, LOW is Negative Direction)
-#define pot1 34 // Potentiometer Pin 1
-#define pot2 35 // Potentiometer Pin 2
 
-#define tickPerRev 11 // Hall-Effect Ticks per Revolution of Motor
 #define gearRatio 20.5 // Gear Ratio (120.4 w/ Cycloidal, 28, + Planetary, 4.3)
 #define maxVel 1000.0 // Maximum Velocity of Motor (RPM)
 #define minVel 0.0 // Minimum Velocity of Motor (RPM)
@@ -27,10 +24,9 @@ void setup() {
   Serial.begin(115200); //Start Serial Communication Rate at This Value
   Serial.print(" ");
 
-  pinMode(DAC1, OUTPUT); //Push a DAC1 Output to Motor Speed Controller
+  pinMode(DAC1, OUTPUT); //Push a DAC Output to Motor Speed Controller
   pinMode(enable1, OUTPUT); //Push an Enable Signal Output to Motor Controller
   pinMode(direction1, OUTPUT); //Push a Direction Signal Output to Motor Controller
-  pinMode(pot1, INPUT); // Pull Input Date from the Potentiometer
   digitalWrite(enable1, HIGH);
   
   /*float points[][5] = {{0,0,45,0,5},
